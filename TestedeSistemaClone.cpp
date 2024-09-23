@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
 #include <string.h>
 
 #define MAX_PRODUTOS 100
@@ -11,7 +12,7 @@ struct Produto {
     int quantidade;
 };
 
-// Funções
+// FunÃ§Ãµes
 void carregarProdutos(struct Produto produtos[], int *contador);
 void salvarProdutos(struct Produto produtos[], int contador);
 void cadastrarProduto(struct Produto produtos[], int *contador);
@@ -23,20 +24,21 @@ void exibirMenu();
 void limparBuffer();
 int verificarSaida(char *input);
 
-// Função principal
+// FunÃ§Ã£o principal
 int main() {
+    setlocale(LC_ALL, "pt_BR.UTF-8");
     struct Produto produtos[MAX_PRODUTOS];
     int contador = 0;
     int opcao;
 
-    // Carrega os produtos do arquivo na inicialização
+    // Carrega os produtos do arquivo na inicializaÃ§Ã£o
     carregarProdutos(produtos, &contador);
 
     do {
         system("cls"); // Limpa a tela antes de exibir o menu
-        exibirMenu();  // Chama a função de exibição de menu
+        exibirMenu();  // Chama a funÃ§Ã£o de exibiÃ§Ã£o de menu
         scanf("%d", &opcao);
-        limparBuffer(); // Limpa o buffer após leitura de número
+        limparBuffer(); // Limpa o buffer apÃ³s leitura de nÃºmero
 
         switch (opcao) {
             case 1:
@@ -46,21 +48,21 @@ int main() {
                 break;
             case 2:
                 listarProdutos(produtos, contador);
-                system("pause");  // Pausa após listar os produtos
+                system("pause");  // Pausa apÃ³s listar os produtos
                 break;
             case 3:
                 atualizarEstoque(produtos, contador);
                 salvarProdutos(produtos, contador);
-                system("pause");  // Pausa após atualizar o estoque
+                system("pause");  // Pausa apÃ³s atualizar o estoque
                 break;
             case 4:
                 relatorioEstoqueBaixo(produtos, contador);
-                system("pause");  // Pausa após gerar o relatório
+                system("pause");  // Pausa apÃ³s gerar o relatÃ³rio
                 break;
             case 5:
                 excluirProduto(produtos, &contador);
                 salvarProdutos(produtos, contador);
-                system("pause");  // Pausa após excluir o produto
+                system("pause");  // Pausa apÃ³s excluir o produto
                 break;
             case 6:
                 printf("Obrigado por usar o sistema! Ate a proxima!\n");
@@ -68,19 +70,19 @@ int main() {
                 system("pause");  // Pausa antes de encerrar o programa
                 break;
             default:
-                printf("Oops! Parece que você digitou uma opção invalida. Tente novamente.\n");
-                system("pause");  // Pausa se o usuário escolher uma opção inválida
+                printf("Oops! Parece que vocÃª digitou uma opÃ§Ã£o invalida. Tente novamente.\n");
+                system("pause");  // Pausa se o usuÃ¡rio escolher uma opÃ§Ã£o invÃ¡lida
         }
     } while (opcao != 6);
 
     return 0;
 }
 
-// Função para carregar os produtos do arquivo
+// FunÃ§Ã£o para carregar os produtos do arquivo
 void carregarProdutos(struct Produto produtos[], int *contador) {
     FILE *arquivo = fopen("produtos.txt", "r");
     if (arquivo == NULL) {
-        printf("Nenhum arquivo de dados encontrado. Vamos começar do zero!\n");
+        printf("Nenhum arquivo de dados encontrado. Vamos comeÃ§ar do zero!\n");
         return;
     }
     while (fscanf(arquivo, "%s %f %d", produtos[*contador].nome, &produtos[*contador].preco, &produtos[*contador].quantidade) != EOF) {
@@ -89,7 +91,7 @@ void carregarProdutos(struct Produto produtos[], int *contador) {
     fclose(arquivo);
 }
 
-// Função para salvar os produtos no arquivo
+// FunÃ§Ã£o para salvar os produtos no arquivo
 void salvarProdutos(struct Produto produtos[], int contador) {
     FILE *arquivo = fopen("produtos.txt", "w");
     if (arquivo == NULL) {
@@ -102,7 +104,7 @@ void salvarProdutos(struct Produto produtos[], int contador) {
     fclose(arquivo);
 }
 
-// Função para cadastrar um novo produto
+// FunÃ§Ã£o para cadastrar um novo produto
 void cadastrarProduto(struct Produto produtos[], int *contador) {
     if (*contador < MAX_PRODUTOS) {
         printf("Vamos cadastrar um novo produto!\n");
@@ -112,19 +114,19 @@ void cadastrarProduto(struct Produto produtos[], int *contador) {
         fgets(produtos[*contador].nome, 50, stdin);
         produtos[*contador].nome[strcspn(produtos[*contador].nome, "\n")] = 0;  // Remove o caractere '\n'
 
-        // Verifica se o usuário quer voltar
+        // Verifica se o usuÃ¡rio quer voltar
         if (verificarSaida(produtos[*contador].nome)) {
             printf("Voltando ao menu principal...\n");
             return;
         }
 
-        printf("\n Preço do produto: ");
+        printf("\n PreÃ§o do produto: ");
         scanf("%f", &produtos[*contador].preco);
-        limparBuffer(); // Limpa o buffer após a leitura do preço
+        limparBuffer(); // Limpa o buffer apÃ³s a leitura do preÃ§o
 
         printf("Quantidade do produto: ");
         scanf("%d", &produtos[*contador].quantidade);
-        limparBuffer(); // Limpa o buffer após a leitura da quantidade
+        limparBuffer(); // Limpa o buffer apÃ³s a leitura da quantidade
 
         (*contador)++;
         printf("Produto cadastrado com sucesso! \n");
@@ -135,19 +137,19 @@ void cadastrarProduto(struct Produto produtos[], int *contador) {
     printf("\n");
 }
 
-// Função para listar os produtos cadastrados
+// FunÃ§Ã£o para listar os produtos cadastrados
 void listarProdutos(struct Produto produtos[], int contador) {
-    printf("Aqui está a lista de produtos cadastrados:\n");
+    printf("Aqui estÃ¡ a lista de produtos cadastrados:\n");
     printf("\n");
 
     for (int i = 0; i < contador; i++) {
-        printf("Produto: %s, Preço: R$ %.2f, Quantidade: %d\n", produtos[i].nome, produtos[i].preco, produtos[i].quantidade);
+        printf("Produto: %s, PreÃ§o: R$ %.2f, Quantidade: %d\n", produtos[i].nome, produtos[i].preco, produtos[i].quantidade);
     }
 
     printf("\n");
 }
 
-// Função para atualizar o estoque de um produto
+// FunÃ§Ã£o para atualizar o estoque de um produto
 void atualizarEstoque(struct Produto produtos[], int contador) {
     char nome[50];
     int quantidade;
@@ -159,7 +161,7 @@ void atualizarEstoque(struct Produto produtos[], int contador) {
     fgets(nome, 50, stdin);
     nome[strcspn(nome, "\n")] = 0;  // Remove o caractere '\n'
 
-    // Verifica se o usuário quer voltar
+    // Verifica se o usuÃ¡rio quer voltar
     if (verificarSaida(nome)) {
         printf("Voltando ao menu principal...\n");
         return;
@@ -169,7 +171,7 @@ void atualizarEstoque(struct Produto produtos[], int contador) {
         if (strcmp(produtos[i].nome, nome) == 0) {
             printf("Quantidade a adicionar ou remover (use numeros negativos para remover):\n ");
             scanf("%d", &quantidade);
-            limparBuffer(); // Limpa o buffer após a leitura da quantidade
+            limparBuffer(); // Limpa o buffer apÃ³s a leitura da quantidade
             produtos[i].quantidade += quantidade;
             printf("Estoque atualizado! \n");
             printf("\n");
@@ -180,7 +182,7 @@ void atualizarEstoque(struct Produto produtos[], int contador) {
     printf("\n");
 }
 
-// Função para gerar relatório de produtos com estoque baixo
+// FunÃ§Ã£o para gerar relatÃ³rio de produtos com estoque baixo
 void relatorioEstoqueBaixo(struct Produto produtos[], int contador) {
     printf("Produtos com estoque baixo (menos de 5 unidades):\n");
     printf("\n");
@@ -200,7 +202,7 @@ void relatorioEstoqueBaixo(struct Produto produtos[], int contador) {
     printf("\n");
 }
 
-// Função para excluir um produto
+// FunÃ§Ã£o para excluir um produto
 void excluirProduto(struct Produto produtos[], int *contador) {
     char nome[50];
     int encontrado = 0;
@@ -212,7 +214,7 @@ void excluirProduto(struct Produto produtos[], int *contador) {
     fgets(nome, 50, stdin);
     nome[strcspn(nome, "\n")] = 0;  // Remove o caractere '\n'
 
-    // Verifica se o usuário quer voltar
+    // Verifica se o usuÃ¡rio quer voltar
     if (verificarSaida(nome)) {
         printf("Voltando ao menu principal...\n");
         return;
@@ -221,7 +223,7 @@ void excluirProduto(struct Produto produtos[], int *contador) {
     for (int i = 0; i < *contador; i++) {
         if (strcmp(produtos[i].nome, nome) == 0) {
             encontrado = 1;
-            // Move todos os produtos após o produto excluído uma posição para frente
+            // Move todos os produtos apÃ³s o produto excluÃ­do uma posiÃ§Ã£o para frente
             for (int j = i; j < *contador - 1; j++) {
                 produtos[j] = produtos[j + 1];
             }
@@ -239,7 +241,7 @@ void excluirProduto(struct Produto produtos[], int *contador) {
     printf("\n");
 }
 
-// Função para exibir o menu principal
+// FunÃ§Ã£o para exibir o menu principal
 void exibirMenu() {
     printf("\n");
     printf("====================================\n");
@@ -255,13 +257,13 @@ void exibirMenu() {
     printf("Escolha uma opcao: \n");
 }
 
-// Função para limpar o buffer de entrada
+// FunÃ§Ã£o para limpar o buffer de entrada
 void limparBuffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF) {}
 }
 
-// Função para verificar se o usuário deseja voltar ao menu
+// FunÃ§Ã£o para verificar se o usuÃ¡rio deseja voltar ao menu
 int verificarSaida(char *input) {
     return strcmp(input, "-+nao quero continuar+-") == 0;
 }
