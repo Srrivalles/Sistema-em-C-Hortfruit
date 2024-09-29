@@ -1,17 +1,26 @@
 import customtkinter
 from tkinter import messagebox
 
+# Dicionário de credenciais (usuário e senha) para cada sistema
+credenciais = {
+    "compras": {"usuario": "compras_admin", "senha": "compras123"},
+    "logistica": {"usuario": "logistica_admin", "senha": "logistica123"},
+    "graal": {"usuario": "graal_admin", "senha": "graal123"}
+}
+
 # Função para verificar login e navegar para o sistema escolhido
 def verificar_login(usuario, senha, sistema):
-    if usuario == "admin" and senha == "1234":
-        if sistema == "compras":
-            mostrar_pagina("compras")
-        elif sistema == "logistica":
-            mostrar_pagina("logistica")
-        elif sistema == "graal":
-            mostrar_pagina("graal")
+    # Verifica se o sistema existe nas credenciais
+    if sistema in credenciais:
+        # Obtém as credenciais do sistema específico
+        credencial_sistema = credenciais[sistema]
+        # Verifica se o usuário e senha fornecidos correspondem às credenciais
+        if usuario == credencial_sistema["usuario"] and senha == credencial_sistema["senha"]:
+            mostrar_pagina(sistema)
+        else:
+            messagebox.showerror("Erro", "Usuário ou senha incorretos!")
     else:
-        messagebox.showerror("Erro", "Usuário ou senha incorretos!")
+        messagebox.showerror("Erro", "Sistema não encontrado!")
 
 # Função para criar a página de login
 def criar_pagina_login(sistema):
