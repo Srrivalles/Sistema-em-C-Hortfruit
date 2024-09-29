@@ -1,91 +1,105 @@
 import customtkinter
 from tkinter import messagebox
 
-# Função para verificação do login
+# Função para verificar login e navegar para o sistema escolhido
 def verificar_login(usuario, senha, sistema):
     if usuario == "admin" and senha == "1234":
         if sistema == "compras":
-            janela_compras()
+            mostrar_pagina("compras")
         elif sistema == "logistica":
-            janela_logistica()
+            mostrar_pagina("logistica")
         elif sistema == "graal":
-            janela_graal()
+            mostrar_pagina("graal")
     else:
         messagebox.showerror("Erro", "Usuário ou senha incorretos!")
 
-# Função para criar a janela de login
-def criar_janela_login(sistema):
-    janela_login = customtkinter.CTkToplevel()
-    janela_login.title("Login")
-    janela_login.geometry("400x200")
-
-    label_usuario = customtkinter.CTkLabel(janela_login, text="Usuário")
+# Função para criar a página de login
+def criar_pagina_login(sistema):
+    limpar_janela()
+    
+    label_usuario = customtkinter.CTkLabel(janela, text="Usuário")
     label_usuario.pack(pady=10)
-    entry_usuario = customtkinter.CTkEntry(janela_login)
+    entry_usuario = customtkinter.CTkEntry(janela)
     entry_usuario.pack(pady=10)
 
-    label_senha = customtkinter.CTkLabel(janela_login, text="Senha")
+    label_senha = customtkinter.CTkLabel(janela, text="Senha")
     label_senha.pack(pady=10)
-    entry_senha = customtkinter.CTkEntry(janela_login, show="*")
+    entry_senha = customtkinter.CTkEntry(janela, show="*")
     entry_senha.pack(pady=10)
 
-    botao_login = customtkinter.CTkButton(janela_login, text="Login", 
+    # Função que será chamada quando o usuário pressionar Enter
+    def ao_pressionar_enter(event):
+        verificar_login(entry_usuario.get(), entry_senha.get(), sistema)
+
+    # Vinculando a tecla Enter para submeter o login
+    janela.bind('<Return>', ao_pressionar_enter)
+    
+    botao_login = customtkinter.CTkButton(janela, text="Login", 
                     command=lambda: verificar_login(entry_usuario.get(), entry_senha.get(), sistema))
     botao_login.pack(pady=20)
+    
+    botao_voltar = customtkinter.CTkButton(janela, text="<- Voltar", command=mostrar_pagina_principal)
+    botao_voltar.pack(pady=20)
 
-# Função para a janela do sistema de compras
-def janela_compras():
-    janela_compras = customtkinter.CTkToplevel()
-    janela_compras.title("Sistema de Compras")
-    janela_compras.geometry("600x400")
-    label = customtkinter.CTkLabel(janela_compras, text="Bem-vindo ao Sistema de Compras")
+# Função para a página do sistema de compras
+def pagina_compras():
+    limpar_janela()
+    label = customtkinter.CTkLabel(janela, text="Bem-vindo ao Sistema de Compras")
     label.pack(pady=20)
+    botao_voltar = customtkinter.CTkButton(janela, text="<- Voltar", command=mostrar_pagina_principal)
+    botao_voltar.pack(pady=20)
 
-# Função para a janela do sistema de logística
-def janela_logistica():
-    janela_logistica = customtkinter.CTkToplevel()
-    janela_logistica.title("Sistema de Logística")
-    janela_logistica.geometry("600x400")
-    label = customtkinter.CTkLabel(janela_logistica, text="Bem-vindo ao Sistema de Logística")
+# Função para a página do sistema de logística
+def pagina_logistica():
+    limpar_janela()
+    label = customtkinter.CTkLabel(janela, text="Bem-vindo ao Sistema de Logística")
     label.pack(pady=20)
+    botao_voltar = customtkinter.CTkButton(janela, text="<- Voltar", command=mostrar_pagina_principal)
+    botao_voltar.pack(pady=20)
 
-# Função para a janela do sistema de pesagem Graal
-def janela_graal():
-    janela_graal = customtkinter.CTkToplevel()
-    janela_graal.title("Sistema de Pesagem Graal")
-    janela_graal.geometry("600x400")
-    label = customtkinter.CTkLabel(janela_graal, text="Bem-vindo ao Sistema de Pesagem Graal")
+# Função para a página do sistema de pesagem Graal
+def pagina_graal():
+    limpar_janela()
+    label = customtkinter.CTkLabel(janela, text="Bem-vindo ao Sistema de Pesagem Graal")
     label.pack(pady=20)
+    botao_voltar = customtkinter.CTkButton(janela, text="<- Voltar", command=mostrar_pagina_principal)
+    botao_voltar.pack(pady=20)
 
-# Funções dos botões principais para abrir as janelas de login
-def abrir_compras():
-    criar_janela_login("compras")
+# Função para limpar a janela (remover widgets existentes)
+def limpar_janela():
+    for widget in janela.winfo_children():
+        widget.pack_forget()
 
-def abrir_logistica():
-    criar_janela_login("logistica")
+# Função para exibir a página principal
+def mostrar_pagina_principal():
+    limpar_janela()
+    titulo = customtkinter.CTkLabel(janela, text="Sistema do Hortfruit", font=("Arial", 14, "bold"))
+    titulo.pack(pady=14)
 
-def abrir_graal():
-    criar_janela_login("graal")
+    botao1 = customtkinter.CTkButton(janela, text="Entrar em Compras", command=lambda: criar_pagina_login("compras"))
+    botao1.pack(pady=10)
+
+    botao2 = customtkinter.CTkButton(janela, text="Entrar em Logística", command=lambda: criar_pagina_login("logistica"))
+    botao2.pack(pady=10)
+
+    botao3 = customtkinter.CTkButton(janela, text="Entrar em Graal", command=lambda: criar_pagina_login("graal"))
+    botao3.pack(pady=10)
+
+# Função para mostrar páginas específicas
+def mostrar_pagina(sistema):
+    if sistema == "compras":
+        pagina_compras()
+    elif sistema == "logistica":
+        pagina_logistica()
+    elif sistema == "graal":
+        pagina_graal()
 
 # Criação da janela principal
 janela = customtkinter.CTk()
 janela.title("Sistemas do Hortfruit")
 janela.geometry("800x400")
 
-# Inserção de componentes na janela principal
-titulo = customtkinter.CTkLabel(janela, text="Sistema de Compras", font=("Arial", 14, "bold"))
-titulo.pack(pady=14)
-botao1 = customtkinter.CTkButton(janela, text="Entrar em Compras", command=abrir_compras)
-botao1.pack(pady=10)
-
-titulo2 = customtkinter.CTkLabel(janela, text="Sistema de Logística", font=("Arial", 14, "bold"))
-titulo2.pack(pady=10)
-botao2 = customtkinter.CTkButton(janela, text="Entrar em Logística", command=abrir_logistica)
-botao2.pack(pady=14)
-
-titulo3 = customtkinter.CTkLabel(janela, text="Sistema de Pesagem Graal", font=("Arial", 14, "bold"))
-titulo3.pack(pady=10)
-botao3 = customtkinter.CTkButton(janela, text="Entrar em Graal", command=abrir_graal)
-botao3.pack(pady=14)
+# Exibir a página principal na inicialização
+mostrar_pagina_principal()
 
 janela.mainloop()
