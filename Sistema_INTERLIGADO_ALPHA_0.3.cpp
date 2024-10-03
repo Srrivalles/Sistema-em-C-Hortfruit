@@ -29,7 +29,7 @@ Cliente clientes[MAX_CLIENTES];
 int total_produtos = 0;
 int total_clientes = 0;
 
-// Funções de estoque (módulo de logística)
+// FunÃ§Ãµes de estoque (mÃ³dulo de logÃ­stica)
 void carregar_produtos();
 void salvar_produtos();
 void cadastrarProduto();
@@ -38,7 +38,7 @@ void atualizarEstoque();
 void relatorioEstoqueBaixo();
 void excluirProduto();
 
-// Funções de compras e reembolso (módulo de compras)
+// FunÃ§Ãµes de compras e reembolso (mÃ³dulo de compras)
 void realizar_compra();
 void verificar_reembolso();
 void registrar_compra(const char *codigo_reembolso, float total);
@@ -46,7 +46,7 @@ float calcular_desconto(float total, float desconto);
 void gerar_codigo_reembolso(char *codigo);
 int verificar_reembolso_valido(time_t timestamp);
 
-// Funções de login, menu e utilitários
+// FunÃ§Ãµes de login, menu e utilitÃ¡rios
 void exibirMenuPrincipal();
 void exibirMenuCompras();
 void exibirMenuLogistica();
@@ -82,7 +82,7 @@ int main() {
                 switch (opcao_compras) {
                     case 1:
                         realizar_compra();
-                        salvar_produtos(); // Salva o estoque após a compra
+                        salvar_produtos(); // Salva o estoque apÃ³s a compra
                         break;
                     case 2:
                         verificar_reembolso();
@@ -91,14 +91,14 @@ int main() {
                         printf("Voltando ao menu principal...\n");
                         break;
                     default:
-                        printf("Opção inválida! Tente novamente.\n");
+                        printf("OpÃ§Ã£o invÃ¡lida! Tente novamente.\n");
                 }
-                system("pause");  // Pausa após cada ação
+                system("pause");  // Pausa apÃ³s cada aÃ§Ã£o
             } while (opcao_compras != 3);
         } else if (opcao_principal == 2) {
-            // Sistema de Logística (estoque)
+            // Sistema de LogÃ­stica (estoque)
             if (!verificar_login(2)) {
-                printf("Acesso ao sistema de logística negado.\n");
+                printf("Acesso ao sistema de logÃ­stica negado.\n");
                 continue;
             }
 
@@ -132,14 +132,14 @@ int main() {
                         printf("Voltando ao menu principal...\n");
                         break;
                     default:
-                        printf("Opção inválida! Tente novamente.\n");
+                        printf("OpÃ§Ã£o invÃ¡lida! Tente novamente.\n");
                 }
-                system("pause");  // Pausa após cada ação
+                system("pause");  // Pausa apÃ³s cada aÃ§Ã£o
             } while (opcao_logistica != 6);
         } else if (opcao_principal == 3) {
             printf("Saindo do sistema...\n");
         } else {
-            printf("Opção inválida! Tente novamente.\n");
+            printf("OpÃ§Ã£o invÃ¡lida! Tente novamente.\n");
         }
         system("pause");
     } while (opcao_principal != 3);
@@ -147,7 +147,7 @@ int main() {
     return 0;
 }
 
-// Funções de estoque (logística)
+// FunÃ§Ãµes de estoque (logÃ­stica)
 void carregar_produtos() {
     FILE *arquivo = fopen(ARQUIVO_ESTOQUE, "r");
     if (arquivo == NULL) {
@@ -181,7 +181,7 @@ void cadastrarProduto() {
         fgets(produtos[total_produtos].nome, 50, stdin);
         produtos[total_produtos].nome[strcspn(produtos[total_produtos].nome, "\n")] = 0;
 
-        printf("Preço: ");
+        printf("PreÃ§o: ");
         scanf("%f", &produtos[total_produtos].preco);
         limparBuffer();
 
@@ -220,7 +220,7 @@ void atualizarEstoque() {
             return;
         }
     }
-    printf("Produto não encontrado.\n");
+    printf("Produto nÃ£o encontrado.\n");
 }
 
 void relatorioEstoqueBaixo() {
@@ -244,14 +244,14 @@ void excluirProduto() {
                 produtos[j] = produtos[j + 1];
             }
             total_produtos--;
-            printf("Produto excluído.\n");
+            printf("Produto excluÃ­do.\n");
             return;
         }
     }
-    printf("Produto não encontrado.\n");
+    printf("Produto nÃ£o encontrado.\n");
 }
 
-// Funções de compras e reembolso
+// FunÃ§Ãµes de compras e reembolso
 void realizar_compra() {
     float total_compra = 0.0;
     int opcao, quantidade;
@@ -271,36 +271,36 @@ void realizar_compra() {
             produtos[opcao - 1].quantidade -= quantidade;
             total_compra += produtos[opcao - 1].preco * quantidade;
         } else {
-            printf("Produto ou quantidade inválidos.\n");
+            printf("Produto ou quantidade invÃ¡lidos.\n");
         }
     }
 
     if (total_compra > 0) {
         gerar_codigo_reembolso(codigo_reembolso);
         printf("Compra realizada! Total: R$%.2f\n", total_compra);
-        printf("Código de reembolso: %s\n", codigo_reembolso);
+        printf("CÃ³digo de reembolso: %s\n", codigo_reembolso);
         registrar_compra(codigo_reembolso, total_compra);
     }
 }
 
 void verificar_reembolso() {
     char codigo[20];
-    printf("Digite o código de reembolso: ");
+    printf("Digite o cÃ³digo de reembolso: ");
     fgets(codigo, 20, stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
     for (int i = 0; i < total_clientes; i++) {
         if (strcmp(clientes[i].codigo_reembolso, codigo) == 0) {
             if (verificar_reembolso_valido(clientes[i].timestamp)) {
-                printf("Reembolso válido! Total a reembolsar: R$%.2f\n", clientes[i].total);
+                printf("Reembolso vÃ¡lido! Total a reembolsar: R$%.2f\n", clientes[i].total);
                 return;
             } else {
-                printf("Desculpe, o período de reembolso expirou.\n");
+                printf("Desculpe, o perÃ­odo de reembolso expirou.\n");
                 return;
             }
         }
     }
-    printf("Código de reembolso não encontrado.\n");
+    printf("CÃ³digo de reembolso nÃ£o encontrado.\n");
 }
 
 void registrar_compra(const char *codigo_reembolso, float total) {
@@ -319,13 +319,13 @@ int verificar_reembolso_valido(time_t timestamp) {
     return difftime(agora, timestamp) <= VALIDADE_REEMBOLSO;
 }
 
-// Funções de menu
+// FunÃ§Ãµes de menu
 void exibirMenuPrincipal() {
     printf("Menu Principal\n");
     printf("1. Sistema de Compras\n");
-    printf("2. Sistema de Logística\n");
+    printf("2. Sistema de LogÃ­stica\n");
     printf("3. Sair\n");
-    printf("Escolha uma opção: ");
+    printf("Escolha uma opÃ§Ã£o: ");
 }
 
 void exibirMenuCompras() {
@@ -333,18 +333,18 @@ void exibirMenuCompras() {
     printf("1. Realizar compra\n");
     printf("2. Verificar reembolso\n");
     printf("3. Voltar ao menu principal\n");
-    printf("Escolha uma opção: ");
+    printf("Escolha uma opÃ§Ã£o: ");
 }
 
 void exibirMenuLogistica() {
-    printf("Sistema de Logística (Estoque)\n");
+    printf("Sistema de LogÃ­stica (Estoque)\n");
     printf("1. Cadastrar produto\n");
     printf("2. Listar produtos\n");
     printf("3. Atualizar estoque\n");
-    printf("4. Relatório de estoque baixo\n");
+    printf("4. RelatÃ³rio de estoque baixo\n");
     printf("5. Excluir produto\n");
     printf("6. Voltar ao menu principal\n");
-    printf("Escolha uma opção: ");
+    printf("Escolha uma opÃ§Ã£o: ");
 }
 
 void limparBuffer() {
@@ -352,11 +352,11 @@ void limparBuffer() {
     while ((c = getchar()) != '\n' && c != EOF) {}
 }
 
-// Função de login com controle de tipo
+// FunÃ§Ã£o de login com controle de tipo
 int verificar_login(int tipo) {
     char usuario[20], senha[20];
     printf("Login\n");
-    printf("Usuário: ");
+    printf("UsuÃ¡rio: ");
     fgets(usuario, 20, stdin);
     usuario[strcspn(usuario, "\n")] = 0;
     printf("Senha: ");
@@ -367,7 +367,7 @@ int verificar_login(int tipo) {
         if (strcmp(usuario, "compras") == 0 && strcmp(senha, "compras123") == 0) {
             return 1;
         }
-    } else if (tipo == 2) { // Sistema de Logística (estoque)
+    } else if (tipo == 2) { // Sistema de LogÃ­stica (estoque)
         if (strcmp(usuario, "logistica") == 0 && strcmp(senha, "logistica123") == 0) {
             return 1;
         }
