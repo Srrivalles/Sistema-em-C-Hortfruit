@@ -16,7 +16,7 @@ struct Produto {
     char codigo[20];
     float preco;
     int quantidade;
-    int vendido_por_peso; // 1 se o produto é vendido por peso, 0 caso contrário
+    int vendido_por_peso; // 1 se o produto Ã© vendido por peso, 0 caso contrÃ¡rio
 };
 
 struct Cliente {
@@ -28,7 +28,7 @@ struct Cliente {
 struct Usuario {
     char username[20];
     char password[20];
-    int tipo; // 1: Caixa, 2: Logística
+    int tipo; // 1: Caixa, 2: LogÃ­stica
 };
 
 struct Produto produtos[MAX_PRODUTOS];
@@ -39,7 +39,7 @@ int total_produtos = 0;
 int total_clientes = 0;
 int total_usuarios = 0;
 
-// Funções de gerenciamento de produtos
+// FunÃ§Ãµes de gerenciamento de produtos
 void cadastrarProduto();
 void listarProdutos();
 void atualizarEstoque();
@@ -48,7 +48,7 @@ void excluirProduto();
 void carregarProdutos();
 void salvarProdutos();
 
-// Funções de compras e reembolso
+// FunÃ§Ãµes de compras e reembolso
 void realizarCompra();
 void gerarCodigoReembolso(char *codigo);
 void registrarCompra(const char *codigo_reembolso, float total);
@@ -56,7 +56,7 @@ void verificarReembolso();
 int verificarReembolsoValido(time_t timestamp);
 float balancaVirtual();
 
-// Funções de login, menu e utilitários
+// FunÃ§Ãµes de login, menu e utilitÃ¡rios
 void exibirMenuPrincipal();
 void exibirMenuEscolha();
 void exibirMenuCompras();
@@ -67,7 +67,7 @@ void cadastrarUsuario();
 void carregarUsuarios();
 void salvarUsuarios();
 
-// Implementações das funções
+// ImplementaÃ§Ãµes das funÃ§Ãµes
 void cadastrarProduto() {
     if (total_produtos < MAX_PRODUTOS) {
         struct Produto novo_produto;
@@ -75,11 +75,11 @@ void cadastrarProduto() {
         fgets(novo_produto.nome, sizeof(novo_produto.nome), stdin);
         novo_produto.nome[strcspn(novo_produto.nome, "\n")] = 0;
 
-        printf("Digite o código do produto: ");
+        printf("Digite o cÃ³digo do produto: ");
         fgets(novo_produto.codigo, sizeof(novo_produto.codigo), stdin);
         novo_produto.codigo[strcspn(novo_produto.codigo, "\n")] = 0;
 
-        printf("Digite o preço do produto: ");
+        printf("Digite o preÃ§o do produto: ");
         scanf("%f", &novo_produto.preco);
         limparBuffer();
 
@@ -87,14 +87,14 @@ void cadastrarProduto() {
         scanf("%d", &novo_produto.quantidade);
         limparBuffer();
 
-        printf("Este produto é vendido por peso? (1 para sim, 0 para não): ");
+        printf("Este produto Ã© vendido por peso? (1 para sim, 0 para nÃ£o): ");
         scanf("%d", &novo_produto.vendido_por_peso);
         limparBuffer();
 
         produtos[total_produtos] = novo_produto;
         total_produtos++;
         printf("Produto cadastrado com sucesso!\n");
-        salvarProdutos(); // Salva após cadastrar
+        salvarProdutos(); // Salva apÃ³s cadastrar
     } else {
         printf("Limite de produtos atingido.\n");
     }
@@ -104,7 +104,7 @@ void listarProdutos() {
     int i;
     printf("Lista de Produtos:\n");
     for (i = 0; i < total_produtos; i++) {
-        printf("%s (Código: %s): R$%.2f, %d unidades%s\n",
+        printf("%s (CÃ³digo: %s): R$%.2f, %d unidades%s\n",
                produtos[i].nome, produtos[i].codigo, produtos[i].preco, produtos[i].quantidade,
                produtos[i].vendido_por_peso ? " (vendido por peso)" : "");
     }
@@ -127,11 +127,11 @@ void atualizarEstoque() {
             limparBuffer();
             produtos[i].quantidade = quantidade;
             printf("Estoque atualizado com sucesso para %s!\n", produtos[i].nome);
-            salvarProdutos(); // Salva após atualizar
+            salvarProdutos(); // Salva apÃ³s atualizar
             return;
         }
     }
-    printf("Produto não encontrado.\n");
+    printf("Produto nÃ£o encontrado.\n");
 }
 
 void relatorioEstoqueBaixo() {
@@ -139,7 +139,7 @@ void relatorioEstoqueBaixo() {
     printf("Produtos com estoque baixo (menor que 10 unidades):\n");
     for (i = 0; i < total_produtos; i++) {
         if (produtos[i].quantidade < 10) {
-            printf("%s (Código: %s): %d unidades\n", produtos[i].nome, produtos[i].codigo, produtos[i].quantidade);
+            printf("%s (CÃ³digo: %s): %d unidades\n", produtos[i].nome, produtos[i].codigo, produtos[i].quantidade);
         }
     }
 }
@@ -147,7 +147,7 @@ void relatorioEstoqueBaixo() {
 void excluirProduto() {
     char codigo[20];
 
-    printf("Digite o código do produto a ser excluído: ");
+    printf("Digite o cÃ³digo do produto a ser excluÃ­do: ");
     fgets(codigo, sizeof(codigo), stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
@@ -159,15 +159,15 @@ void excluirProduto() {
                 produtos[j] = produtos[j + 1];
             }
             total_produtos--;
-            printf("Produto excluído com sucesso!\n");
-            salvarProdutos(); // Salva após excluir
+            printf("Produto excluÃ­do com sucesso!\n");
+            salvarProdutos(); // Salva apÃ³s excluir
             return;
         }
     }
-    printf("Produto não encontrado.\n");
+    printf("Produto nÃ£o encontrado.\n");
 }
 
-// Funções de compras e reembolso
+// FunÃ§Ãµes de compras e reembolso
 float balancaVirtual() {
     float peso;
     printf("Digite o peso (em kg): ");
@@ -181,7 +181,7 @@ void realizarCompra() {
     int quantidade;
     char codigo[20];
 
-    printf("Digite o código do produto para compra: ");
+    printf("Digite o cÃ³digo do produto para compra: ");
     fgets(codigo, sizeof(codigo), stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
@@ -189,8 +189,8 @@ void realizarCompra() {
     for (i = 0; i < total_produtos; i++) {
         if (strcmp(produtos[i].codigo, codigo) == 0) {
             printf("Nome: %s\n", produtos[i].nome);
-            printf("Preço: R$%.2f\n", produtos[i].preco);
-            printf("Quantidade disponível: %d\n", produtos[i].quantidade);
+            printf("PreÃ§o: R$%.2f\n", produtos[i].preco);
+            printf("Quantidade disponÃ­vel: %d\n", produtos[i].quantidade);
 
             if (produtos[i].vendido_por_peso) {
                 float peso = balancaVirtual();
@@ -200,8 +200,8 @@ void realizarCompra() {
                 gerarCodigoReembolso(codigo_reembolso);
                 registrarCompra(codigo_reembolso, total);
                 
-                // Atualiza o estoque após a venda
-                produtos[i].quantidade -= (int)peso; // Ajuste conforme necessário
+                // Atualiza o estoque apÃ³s a venda
+                produtos[i].quantidade -= (int)peso; // Ajuste conforme necessÃ¡rio
                 salvarProdutos(); // Salva a quantidade atualizada no arquivo
                 return;
             } else {
@@ -217,7 +217,7 @@ void realizarCompra() {
                     gerarCodigoReembolso(codigo_reembolso);
                     registrarCompra(codigo_reembolso, total);
 
-                    // Atualiza o estoque após a venda
+                    // Atualiza o estoque apÃ³s a venda
                     salvarProdutos(); // Salva a quantidade atualizada no arquivo
                     return;
                 } else {
@@ -227,7 +227,7 @@ void realizarCompra() {
             }
         }
     }
-    printf("Produto não encontrado.\n");
+    printf("Produto nÃ£o encontrado.\n");
 }
 
 void gerarCodigoReembolso(char *codigo) {
@@ -248,7 +248,7 @@ int verificarReembolsoValido(time_t timestamp) {
 
 void verificarReembolso() {
     char codigo[20];
-    printf("Digite o código de reembolso: ");
+    printf("Digite o cÃ³digo de reembolso: ");
     fgets(codigo, sizeof(codigo), stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
@@ -256,25 +256,25 @@ void verificarReembolso() {
     for (i = 0; i < total_clientes; i++) {
         if (strcmp(clientes[i].codigo_reembolso, codigo) == 0) {
             if (verificarReembolsoValido(clientes[i].timestamp)) {
-                printf("Reembolso válido: R$%.2f\n", clientes[i].total);
+                printf("Reembolso vÃ¡lido: R$%.2f\n", clientes[i].total);
             } else {
-                printf("Reembolso inválido ou expirado.\n");
+                printf("Reembolso invÃ¡lido ou expirado.\n");
             }
             return;
         }
     }
-    printf("Código de reembolso não encontrado.\n");
+    printf("CÃ³digo de reembolso nÃ£o encontrado.\n");
 }
 
-// Funções de login e gerenciamento de usuários
+// FunÃ§Ãµes de login e gerenciamento de usuÃ¡rios
 void exibirMenuPrincipal() {
     int opcao;
     while (1) {
         printf("\nMenu Principal:\n");
         printf("1. Login\n");
-        printf("2. Cadastrar Usuário\n");
+        printf("2. Cadastrar UsuÃ¡rio\n");
         printf("3. Sair\n");
-        printf("Escolha uma opção: ");
+        printf("Escolha uma opÃ§Ã£o: ");
         scanf("%d", &opcao);
         limparBuffer();
 
@@ -290,7 +290,7 @@ void exibirMenuPrincipal() {
             case 3:
                 exit(0);
             default:
-                printf("Opção inválida.\n");
+                printf("OpÃ§Ã£o invÃ¡lida.\n");
         }
     }
 }
@@ -298,12 +298,12 @@ void exibirMenuPrincipal() {
 void exibirMenuEscolha() {
     int opcao;
     while (1) {
-        printf("\nEscolha uma opção:\n");
+        printf("\nEscolha uma opÃ§Ã£o:\n");
         printf("1. Realizar Compra\n");
         printf("2. Gerenciar Produtos\n");
         printf("3. Verificar Reembolso\n");
         printf("4. Sair\n");
-        printf("Escolha uma opção: ");
+        printf("Escolha uma opÃ§Ã£o: ");
         scanf("%d", &opcao);
         limparBuffer();
 
@@ -320,7 +320,7 @@ void exibirMenuEscolha() {
             case 4:
                 return;
             default:
-                printf("Opção inválida.\n");
+                printf("OpÃ§Ã£o invÃ¡lida.\n");
         }
     }
 }
@@ -328,14 +328,14 @@ void exibirMenuEscolha() {
 void exibirMenuLogistica() {
     int opcao;
     while (1) {
-        printf("\nMenu de Logística:\n");
+        printf("\nMenu de LogÃ­stica:\n");
         printf("1. Cadastrar Produto\n");
         printf("2. Listar Produtos\n");
         printf("3. Atualizar Estoque\n");
-        printf("4. Relatório de Estoque Baixo\n");
+        printf("4. RelatÃ³rio de Estoque Baixo\n");
         printf("5. Excluir Produto\n");
         printf("6. Sair\n");
-        printf("Escolha uma opção: ");
+        printf("Escolha uma opÃ§Ã£o: ");
         scanf("%d", &opcao);
         limparBuffer();
 
@@ -358,7 +358,7 @@ void exibirMenuLogistica() {
             case 6:
                 return;
             default:
-                printf("Opção inválida.\n");
+                printf("OpÃ§Ã£o invÃ¡lida.\n");
         }
     }
 }
@@ -398,15 +398,15 @@ void cadastrarUsuario() {
         fgets(novo_usuario.password, sizeof(novo_usuario.password), stdin);
         novo_usuario.password[strcspn(novo_usuario.password, "\n")] = 0;
 
-        printf("Digite o tipo de usuário (1: Caixa, 2: Logística): ");
+        printf("Digite o tipo de usuÃ¡rio (1: Caixa, 2: LogÃ­stica): ");
         scanf("%d", &novo_usuario.tipo);
         limparBuffer();
 
         usuarios[total_usuarios++] = novo_usuario;
-        printf("Usuário cadastrado com sucesso!\n");
-        salvarUsuarios(); // Salva após cadastrar
+        printf("UsuÃ¡rio cadastrado com sucesso!\n");
+        salvarUsuarios(); // Salva apÃ³s cadastrar
     } else {
-        printf("Limite de usuários atingido.\n");
+        printf("Limite de usuÃ¡rios atingido.\n");
     }
 }
 
