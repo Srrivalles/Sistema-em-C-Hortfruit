@@ -1,49 +1,60 @@
 #include <stdio.h>
+#include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <locale.h>
 
 #define MAX_PRODUTOS 100
 #define MAX_CLIENTES 100
 #define MAX_USUARIOS 100
-#define VALIDADE_REEMBOLSO 3600 // 1 hora em segundos
+#define MAX_HISTORICO 100
+#define VALIDADE_REEMBOLSO 3600
 #define ARQUIVO_ESTOQUE "produtos.txt"
 #define ARQUIVO_COMPRAS "compras.txt"
 #define ARQUIVO_CLIENTES "clientes.txt"
 #define ARQUIVO_USUARIOS "usuarios.txt"
 #define ARQUIVO_BACKUP_ESTOQUE "backup_produtos.txt"
 #define ARQUIVO_BACKUP_USUARIOS "backup_usuarios.txt"
+#define ARQUIVO_HISTORICO "historico_compras.txt"
 
-// Estrutura para produtos
+// Estruturas
 typedef struct {
-    char codigo[20]; // Campo para o código do produto
+    char codigo[20];
     char nome[50];
     float preco;
     int quantidade;
 } Produto;
 
-// Estrutura para clientes e reembolsos
 typedef struct {
     char codigo_reembolso[20];
     float total;
     time_t timestamp;
 } Cliente;
 
-// Estrutura para usuários
 typedef struct {
     char username[20];
     char password[20];
-    int tipo; // 1: Cliente, 2: Logística
+    int tipo;
 } Usuario;
+
+typedef struct {
+    char codigo_produto[20];
+    char nome_produto[50];
+    int quantidade;
+    float preco_unitario;
+    float preco_total;
+    time_t timestamp;
+} HistoricoCompra;
 
 // Variáveis globais
 Produto produtos[MAX_PRODUTOS];
 Cliente clientes[MAX_CLIENTES];
 Usuario usuarios[MAX_USUARIOS];
+HistoricoCompra historico_compras[MAX_HISTORICO];
 int total_produtos = 0;
 int total_clientes = 0;
 int total_usuarios = 0;
+int total_historico = 0;
 
 // Funções
 void carregar_produtos();
@@ -68,17 +79,24 @@ void cadastrar_usuario();
 int login_usuario();
 void carregar_usuarios();
 void salvar_usuarios();
-void backup_dados(); // Nova função para backup
+void backup_dados();
+void salvar_historico();
+void carregar_historico();
 
 // Função principal
 int main() {
     setlocale(LC_ALL, "Portuguese");
     carregar_produtos();
     carregar_usuarios();
+    carregar_historico();
 
     int opcao_principal;
     do {
+#ifdef _WIN32
         system("cls");
+#else
+        system("clear");
+#endif
         exibirMenuPrincipal();
         scanf("%d", &opcao_principal);
         limparBuffer();
@@ -87,7 +105,11 @@ int main() {
             if (login_usuario() == 1) {
                 int opcao_compras;
                 do {
+#ifdef _WIN32
                     system("cls");
+#else
+                    system("clear");
+#endif
                     exibirMenuCompras();
                     scanf("%d", &opcao_compras);
                     limparBuffer();
@@ -103,7 +125,11 @@ int main() {
             if (login_usuario() == 2) {
                 int opcao_logistica;
                 do {
+#ifdef _WIN32
                     system("cls");
+#else
+                    system("clear");
+#endif
                     exibirMenuLogistica();
                     scanf("%d", &opcao_logistica);
                     limparBuffer();
@@ -130,8 +156,54 @@ int main() {
 
     salvar_produtos();
     salvar_usuarios();
-    backup_dados(); // Chama a função de backup antes de sair
+    backup_dados();
+    salvar_historico();
     return 0;
+}
+
+// Função para registrar compra no histórico
+void registrar_compra(const char *codigo_reembolso, float total) {
+    if (total_clientes < MAX_CLIENTES) {
+        strcpy(clientes[total_clientes].codigo_reembolso, codigo_reembolso);
+        clientes[total_clientes].total = total;
+        clientes[total_clientes].timestamp = time(NULL);
+        total_clientes++;
+        salvar_produtos();
+        printf("Compra registrada com sucesso.\n");
+    } else {
+        printf("Limite de clientes atingido.\n");
+    }
+}
+
+// Função para salvar histórico de compras
+void salvar_historico() {
+    FILE *arquivo = fopen(ARQUIVO_HISTORICO, "w");
+    if (!arquivo) {
+        printf("Erro ao salvar o histórico de compras.\n");
+        return;
+    }
+    for (int i = 0; i < total_historico; i++) {
+        fprintf(arquivo, "%s,%s,%d,%.2f,%.2f,%ld\n", historico_compras[i].codigo_produto, historico_compras[i].nome_produto, 
+                historico_compras[i].quantidade, historico_compras[i].preco_unitario, historico_compras[i].preco_total, 
+                historico_compras[i].timestamp);
+    }
+    fclose(arquivo);
+}
+
+// Função para carregar histórico de compras
+void carregar_historico() {
+    FILE *arquivo = fopen(ARQUIVO_HISTORICO, "r");
+    if (!arquivo) {
+        printf("Nenhum histórico de compras encontrado.\n");
+        return;
+    }
+    while (fscanf(arquivo, "%[^,],%[^,],%d,%f,%f,%ld\n", historico_compras[total_historico].codigo_produto, 
+                  historico_compras[total_historico].nome_produto, &historico_compras[total_historico].quantidade, 
+                  &historico_compras[total_historico].preco_unitario, &historico_compras[total_historico].preco_total, 
+                  &historico_compras[total_historico].timestamp) != EOF) {
+        total_historico++;
+    }
+    fclose(arquivo);
 }
 
 // Funções de gerenciamento de produtos
@@ -281,18 +353,6 @@ void gerar_codigo_reembolso(char *codigo) {
     time(&agora);
     info = localtime(&agora);
     snprintf(codigo, 20, "REEMB-%02d%02d%02d%02d", info->tm_year % 100, info->tm_mon + 1, info->tm_mday, total_clientes + 1);
-}
-
-void registrar_compra(const char *codigo_reembolso, float total) {
-    if (total_clientes < MAX_CLIENTES) {
-        strcpy(clientes[total_clientes].codigo_reembolso, codigo_reembolso);
-        clientes[total_clientes].total = total;
-        clientes[total_clientes].timestamp = time(NULL);
-        total_clientes++;
-        salvar_produtos();
-    } else {
-        printf("Limite de clientes atingido.\n");
-    }
 }
 
 void verificar_reembolso() {
