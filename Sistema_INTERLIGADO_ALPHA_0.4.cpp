@@ -195,7 +195,6 @@ void realizarCompra() {
             if (produtos[i].vendido_por_peso) {
                 float peso = balancaVirtual();
                 total += produtos[i].preco * peso;
-                printf("Compra realizada com sucesso! Total: R$%.2f\n", total);
                 char codigo_reembolso[20];
                 gerarCodigoReembolso(codigo_reembolso);
                 registrarCompra(codigo_reembolso, total);
@@ -203,6 +202,10 @@ void realizarCompra() {
                 // Atualiza o estoque após a venda
                 produtos[i].quantidade -= (int)peso; // Ajuste conforme necessário
                 salvarProdutos(); // Salva a quantidade atualizada no arquivo
+
+                // Exibir o código de reembolso
+                printf("Compra realizada com sucesso! Total: R$%.2f\n", total);
+                printf("Código de reembolso: %s\n", codigo_reembolso);
                 return;
             } else {
                 printf("Quantidade a comprar: ");
@@ -212,13 +215,16 @@ void realizarCompra() {
                 if (quantidade <= produtos[i].quantidade) {
                     produtos[i].quantidade -= quantidade;
                     total += produtos[i].preco * quantidade;
-                    printf("Compra realizada com sucesso! Total: R$%.2f\n", total);
                     char codigo_reembolso[20];
                     gerarCodigoReembolso(codigo_reembolso);
                     registrarCompra(codigo_reembolso, total);
 
                     // Atualiza o estoque após a venda
                     salvarProdutos(); // Salva a quantidade atualizada no arquivo
+
+                    // Exibir o código de reembolso
+                    printf("Compra realizada com sucesso! Total: R$%.2f\n", total);
+                    printf("Código de reembolso: %s\n", codigo_reembolso);
                     return;
                 } else {
                     printf("Quantidade insuficiente em estoque!\n");
@@ -257,6 +263,20 @@ void verificarReembolso() {
         if (strcmp(clientes[i].codigo_reembolso, codigo) == 0) {
             if (verificarReembolsoValido(clientes[i].timestamp)) {
                 printf("Reembolso válido: R$%.2f\n", clientes[i].total);
+
+                // Restaurar a quantidade de produtos
+                float valor_reembolsado = clientes[i].total;
+                for (int j = 0; j < total_produtos; j++) {
+                    if (valor_reembolsado >= produtos[j].preco) {
+                        int quantidade_reembolsada = (int)(valor_reembolsado / produtos[j].preco);
+                        produtos[j].quantidade += quantidade_reembolsada;
+                        valor_reembolsado -= quantidade_reembolsada * produtos[j].preco;
+                    }
+                }
+
+                // Salvar o estoque atualizado após o reembolso
+                salvarProdutos();
+                printf("Estoque restaurado após o reembolso.\n");
             } else {
                 printf("Reembolso inválido ou expirado.\n");
             }
@@ -471,4 +491,3 @@ int main() {
     exibirMenuPrincipal();
     return 0;
 }
-
