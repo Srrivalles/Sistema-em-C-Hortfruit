@@ -157,13 +157,13 @@ void atualizarEstoque() {
             return;
         }
     }
-    printf("Produto não encontrado.\n");
+    printf("\nProduto não encontrado.\n");
 }
 
 void relatorioEstoqueBaixo() {
     system("cls");
     int i;
-    printf("Produtos com estoque baixo (Menor que 10 unidades): \n");
+    printf("\nProdutos com estoque baixo (Menor que 10 unidades): \n");
     for (i = 0; i < total_produtos; i++) {
         if (produtos[i].quantidade < 10) {
             printf("%s  ||  Código: %s  ||  Unidades Disponíveis: %d %s\n", produtos[i].nome, produtos[i].codigo, produtos[i].quantidade);
@@ -189,12 +189,14 @@ void excluirProduto() {
                 produtos[j] = produtos[j + 1];
             }
             total_produtos--;
+            system("cls");
             printf("\nProduto Excluído Com Sucesso!\n");
             salvarProdutos(); // Salva após excluir
             return;
         }
     }
-    printf("Produto não encontrado.\n");
+    system("cls");
+    printf("\nProduto não encontrado.\n");
 }
 
 // Funções de compras e reembolso
@@ -358,7 +360,7 @@ void verificarReembolso() {
                 clientes[i].utilizado = 1;
                 printf("\nEstoque restaurado após o reembolso.\n");
             } else {
-                printf("Reembolso inválido ou expirado.\n");
+                printf("\nReembolso inválido ou expirado.\n");
             }
             return;
         }
@@ -390,6 +392,7 @@ void exibirMenuPrincipal() {
                 cadastrarUsuario();
                 break;
             case 0:
+            	printf("\n\nObrigado por usar nosso Sistema!");
                 exit(0);
             default:
             	system("cls");
@@ -401,7 +404,7 @@ void exibirMenuPrincipal() {
 void exibirMenuEscolha() {
     int opcao;
     system("cls");
-    printf("\nLOGADO COM SUCESSO\n");
+    printf("\nLOGADO COM SUCESSO!\n");
     while (1) {
         printf("\nEscolha uma opção:\n");
         printf("1. Adicionar ao Carrinho\n");
@@ -430,6 +433,7 @@ void exibirMenuEscolha() {
             	system("cls");
                 return;
             default:
+            	system("cls");
                 printf("Opção inválida.\n");
         }
     }
@@ -472,6 +476,7 @@ void exibirMenuLogistica() {
             	system("cls");
                 return;
             default:
+            	system("cls");
                 printf("Opção inválida.\n");
         }
     }
@@ -484,7 +489,7 @@ void limparBuffer() {
 int verificarLogin() {
 	system("cls");
     char username[20], password[20];
-    printf("Logando...\n");
+    printf("\nLogando...\n");
     printf("\nNome de usúario: ");
     fgets(username, sizeof(username), stdin);
     username[strcspn(username, "\n")] = 0;
