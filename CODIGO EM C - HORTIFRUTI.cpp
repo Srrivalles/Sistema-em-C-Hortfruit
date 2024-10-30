@@ -126,7 +126,8 @@ void listarProdutos() {
 		printf(" Preço:    R$ %.2f\n", produtos[i].preco);
 		printf(" Unidades:  %d %s\n", produtos[i].quantidade,
 		       produtos[i].vendido_por_peso ? "(Vendido em KG)" : "(Unidades)");
-		
+		printf("------------------------------------------------------------\n");
+
 
     }
 }
@@ -217,8 +218,8 @@ void adicionarAoCarrinho() {
         codigo[strcspn(codigo, "\n")] = 0;
 
         if (strcmp(codigo, "0") == 0) {
-        	system("cls");
-        	printf("\nProdutos adicionados ao Carrinho!\n");
+            system("cls");
+            printf("\nProdutos adicionados ao Carrinho!\n");
             break; // Finaliza a adição de produtos ao carrinho
         }
 
@@ -227,24 +228,34 @@ void adicionarAoCarrinho() {
             if (strcmp(produtos[i].codigo, codigo) == 0) {
                 encontrado = 1;
                 printf("----------------------------------------------------------\n");
-				printf("           Produto encontrado:\n");
-				printf("----------------------------------------------------------\n");
-				printf(" Nome do Produto: %s\n", produtos[i].nome);
-				printf(" Preço:    R$ %.2f\n", produtos[i].preco);
-				printf(" Estoque:   %d\n", produtos[i].quantidade);
-				printf("----------------------------------------------------------\n");
+                printf("           Produto encontrado:\n");
+                printf("----------------------------------------------------------\n");
+                printf(" Nome do Produto: %s\n", produtos[i].nome);
+                printf(" Preço:    R$ %.2f\n", produtos[i].preco);
+                printf(" Estoque:   %d\n", produtos[i].quantidade);
+                printf("----------------------------------------------------------\n");
 
+                // Verifica se o estoque do produto é maior que zero
+                if (produtos[i].quantidade <= 0) {
+                	system("cls");
+                    printf("\nProduto sem estoque disponível.\n");
+                    return; // Retorna ao menu sem adicionar o produto
+                }
 
                 // Verifica se o produto é vendido por peso
                 if (produtos[i].vendido_por_peso) {
                     float peso = balancaVirtual();
                     if (peso > 0) {
-                        carrinho[total_carrinho].produto = produtos[i];
-                        carrinho[total_carrinho].peso = peso;
-                        carrinho[total_carrinho].quantidade = 0; // Não aplica quantidade
-                        total_carrinho++;
-                        produtos[i].quantidade -= (int)peso; // Atualiza o estoque
-                        printf("\nProduto adicionado ao carrinho!\n");
+                        if (peso <= produtos[i].quantidade) {
+                            carrinho[total_carrinho].produto = produtos[i];
+                            carrinho[total_carrinho].peso = peso;
+                            carrinho[total_carrinho].quantidade = 0; // Não aplica quantidade
+                            total_carrinho++;
+                            produtos[i].quantidade -= (int)peso; // Atualiza o estoque
+                            printf("\nProduto adicionado ao carrinho!\n");
+                        } else {
+                            printf("\nPeso excede o estoque disponível.\n");
+                        }
                     }
                 } else {
                     printf("\nQuantidade a adicionar ao carrinho (ou 0 para cancelar): ");
@@ -326,7 +337,7 @@ void verificarReembolso() {
         if (strcmp(clientes[i].codigo_reembolso, codigo) == 0) {
             if (clientes[i].utilizado) {
             	system("cls");
-                printf("Este código de reembolso já foi utilizado.\n");
+                printf("\nEste código de reembolso já foi utilizado.\n");
                 return;
             }
             if (verificarReembolsoValido(clientes[i].timestamp)) {
@@ -352,7 +363,7 @@ void verificarReembolso() {
             return;
         }
     }
-    printf("Código de reembolso não encontrado.\n");
+    printf("\nCódigo de reembolso não encontrado.\n");
 }
 
 
@@ -364,7 +375,7 @@ void exibirMenuPrincipal() {
         printf("\nMenu Principal:\n");
         printf("1. Login\n");
         printf("2. Cadastrar Usuário\n");
-        printf("3. Sair\n");
+        printf("0. Sair\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
         limparBuffer();
@@ -378,10 +389,11 @@ void exibirMenuPrincipal() {
             case 2:
                 cadastrarUsuario();
                 break;
-            case 3:
+            case 0:
                 exit(0);
             default:
-                printf("Opção inválida.\n");
+            	system("cls");
+                printf("\nOpção inválida.\n");
         }
     }
 }
