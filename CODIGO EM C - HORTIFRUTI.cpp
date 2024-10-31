@@ -87,7 +87,11 @@ void cadastrarProduto() {
         printf("Digite o nome do produto (Ou digite '0' para Cancelar): ");
         fgets(novo_produto.nome, sizeof(novo_produto.nome), stdin);
         novo_produto.nome[strcspn(novo_produto.nome, "\n")] = 0;
-        if (strcmp(novo_produto.nome, "0") == 0) return;  // Cancela e volta ao menu anterior
+        if (strcmp(novo_produto.nome, "0") == 0) {
+    	system("cls");
+    	return; // Cancela e volta ao menu anterior
+}
+
 
         printf("Digite o código do produto: ");
         fgets(novo_produto.codigo, sizeof(novo_produto.codigo), stdin);
@@ -127,7 +131,7 @@ void listarProdutos() {
 		printf(" Preço:    R$ %.2f\n", produtos[i].preco);
 		printf(" Unidades:  %d %s\n", produtos[i].quantidade,
 		       produtos[i].vendido_por_peso ? "(Vendido em KG)" : "(Unidades)");
-		printf("------------------------------------------------------------\n");
+		printf("------------------------------------------------------------");
 
 
     }
@@ -164,7 +168,7 @@ void atualizarEstoque() {
 void relatorioEstoqueBaixo() {
     system("cls");
     int i;
-    printf("\nProdutos com estoque baixo (Menor que 10 unidades): \n");
+    printf("\n\nProdutos com estoque baixo (Menor que 10 unidades): \n");
     for (i = 0; i < total_produtos; i++) {
         if (produtos[i].quantidade < 10) {
             printf("%s  ||  Código: %s  ||  Unidades Disponíveis: %d %s\n", produtos[i].nome, produtos[i].codigo, produtos[i].quantidade);
@@ -178,7 +182,7 @@ void excluirProduto() {
     char codigo[20];
     listarProdutos();
 
-    printf("\nCódigo do Produto a Ser Excluído do Estoque: ");
+    printf("\n\n\n\nCódigo do Produto a Ser Excluído do Estoque: ");
     fgets(codigo, sizeof(codigo), stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
@@ -282,7 +286,9 @@ void adicionarAoCarrinho() {
         }
 
         if (!encontrado) {
-            printf("Produto não encontrado.\n");
+            printf("\nProduto não Encontrado.\n\n");
+            system("pause");
+    		system("cls");
         }
     }
 }
@@ -307,7 +313,10 @@ void realizarCompra() {
         printf("\nCódigo de reembolso: %s\n", codigo_reembolso);
         total_carrinho = 0; // Limpa o carrinho após a compra
     } else {
-        printf("\nCarrinho vazio. Adicione produtos antes de finalizar a compra.\n");
+    	system("cls");
+        printf("\nCarrinho vazio. Adicione produtos antes de finalizar a compra.\n\n");
+        system("pause");
+    	system("cls");
     }
 }
 
@@ -341,6 +350,8 @@ void verificarReembolso() {
             if (clientes[i].utilizado) {
             	system("cls");
                 printf("\nEste código de reembolso já foi utilizado.\n");
+                system("pause");
+    			system("cls");
                 return;
             }
             if (verificarReembolsoValido(clientes[i].timestamp)) {
@@ -366,7 +377,10 @@ void verificarReembolso() {
             return;
         }
     }
-    printf("\nCódigo de reembolso não encontrado.\n");
+    system("cls");
+    printf("\n\n\n\nCódigo de reembolso não encontrado.\n");
+    system("pause");
+    system("cls");
 }
 
 
@@ -376,17 +390,17 @@ void exibirMenuPrincipal() {
     char I;
     system("cls");
     while (1) {
-    printf("\n\n\n\n\n\n\n\n\n _______________________\n");
-    printf("| Menu Principal:       |\n");
-    printf("|-----------------------|\n");
-    printf("| 1. Login              |\n");
-    printf("| 2. Cadastrar Usuário  |\n");
-    printf("| 0. Sair               |\n");
-    printf("|-----------------------|\n");
-    printf("| Escolha uma opção:    | ");
-    printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-    scanf("%d", &opcao);
-    printf("|_______________________|\n");
+        printf("\n\n\n\n\n\n\n\n\n ________________________\n");
+        printf("| Menu Principal:        |\n");
+        printf("|------------------------|\n");
+        printf("| 1. Login               |\n");
+        printf("| 2. Cadastrar Usuário  |\n");
+        printf("| 0. Sair                |\n");
+        printf("|------------------------|\n");
+        printf("| Escolha uma opção:   | ");
+        printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+        scanf("%d", &opcao);
+        printf("|________________________|\n");
         limparBuffer();
 
         switch (opcao) {
@@ -399,11 +413,13 @@ void exibirMenuPrincipal() {
                 cadastrarUsuario();
                 break;
             case 0:
-            	printf("\n\nObrigado por usar nosso Sistema!");
+                printf("\n\nObrigado por usar nosso Sistema!");
                 exit(0);
             default:
-            	system("cls");
-                printf("\nOpção inválida.\n");
+                system("cls");
+                printf("\nOpção inválida.\n\n");
+                system("pause");
+    			system("cls");
         }
     }
 }
@@ -411,18 +427,22 @@ void exibirMenuPrincipal() {
 void exibirMenuEscolha() {
     int opcao;
     system("cls");
-    printf("\nLOGADO COM SUCESSO!\n");
+    printf("\n ________________________\n");
+    printf("   LOGADO COM SUCESSO!    \n");
     while (1) {
-        printf("\nEscolha uma opção:\n");
-        printf("1. Adicionar ao Carrinho\n");
-        printf("2. Finalizar Compra\n");
-        printf("3. Gerenciar Produtos\n");
-        printf("4. Verificar Reembolso\n");
-        printf("0. Sair\n");
-        printf("Escolha uma opção: ");
+    	printf("\n\n\n\n\n\n\n\n\n __________________________\n");
+        printf("| 1. Adicionar ao Carrinho |\n");
+        printf("| 2. Finalizar Compra      |\n");
+        printf("| 3. Gerenciar Produtos    |\n");
+        printf("| 4. Verificar Reembolso   |\n");
+        printf("| 0. Sair                  |\n");
+        printf("|--------------------------|\n");
+        printf("| Escolha uma opção:     | ");
+        printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
         scanf("%d", &opcao);
+        printf("|_______________________|\n");
         limparBuffer();
-
+        
         switch (opcao) {
             case 1:
                 adicionarAoCarrinho();
@@ -437,30 +457,36 @@ void exibirMenuEscolha() {
                 verificarReembolso();
                 break;
             case 0:
-            	system("cls");
+                system("cls");
                 return;
             default:
-            	system("cls");
-                printf("Opção inválida.\n");
+                system("cls");
+                printf("Opção inválida.\n\n");
+                system("pause");
+    			system("cls");
         }
     }
 }
 
-
 void exibirMenuLogistica() {
     int opcao;
-	system("cls");
-
+    system("cls");
     while (1) {
-        printf("\nMenu de Logística:\n");
-        printf("1. Cadastrar Produto\n");
-        printf("2. Listar Produtos\n");
-        printf("3. Atualizar Estoque\n");
-        printf("4. Relatório de Estoque Baixo\n");
-        printf("5. Excluir Produto\n");
-        printf("0. Voltar\n");
-        printf("Escolha uma opção: ");
+    	printf("\n\n\n\n\n\n\n\n\n _______________________________\n");
+    	printf("|     Menu de Logística        |\n");
+    	printf("|-------------------------------|\n");
+        printf("| 1. Cadastrar Produto      	|\n");
+        printf("| 2. Listar Produtos        	|\n");
+        printf("| 3. Atualizar Estoque      	|\n");
+        printf("| 4. Relatório de Estoque Baixo|\n");
+        printf("| 5. Excluir Produto        	|\n");
+        printf("| 0. Voltar                 	|\n");
+        printf("|-------------------------------|\n");
+        printf("| Escolha uma opção:        	| ");
+        printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
         scanf("%d", &opcao);
+        printf("|_______________________________|\n");
+
         limparBuffer();
 
         switch (opcao) {
@@ -480,11 +506,13 @@ void exibirMenuLogistica() {
                 excluirProduto();
                 break;
             case 0:
-            	system("cls");
+                system("cls");
                 return;
             default:
-            	system("cls");
-                printf("Opção inválida.\n");
+                system("cls");
+                printf("Opção inválida.\n\n");
+                system("pause");
+    			system("cls");
         }
     }
 }
@@ -538,8 +566,10 @@ void cadastrarUsuario() {
     } else {
         printf("Limite de usuários atingido.\n");
     }
+    system("cls");
     printf("\nCADASTRADO COM SUCESSO!\n\n");
-
+    system("pause");
+    system("cls");
 }
 
 void carregarProdutos() {
