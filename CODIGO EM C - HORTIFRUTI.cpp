@@ -512,7 +512,9 @@ int verificarLogin() {
         }
     }
     system("cls");
-    printf("\nLogin Falhou.\n");
+    printf("\n\n\n\n\nLogin Falhou.\n");
+    system("pause");
+    system("cls");
     return 0; // Login falhou
 }
 
