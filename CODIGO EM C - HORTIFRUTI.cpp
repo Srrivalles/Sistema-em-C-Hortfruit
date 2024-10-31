@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <locale.h>
+#include <conio.h>
 
 #define MAX_PRODUTOS 100
 #define MAX_CLIENTES 100
@@ -12,7 +13,7 @@
 #define ARQUIVO_USUARIOS "usuarios.txt"
 #define ARQUIVO_PRODUTOS "produtos.txt"
 
-struct Produto {
+struct Produto { 
     char nome[50];
     char codigo[20];
     float preco;
@@ -372,14 +373,20 @@ void verificarReembolso() {
 // Funções de login e gerenciamento de usuários
 void exibirMenuPrincipal() {
     int opcao;
+    char I;
     system("cls");
     while (1) {
-        printf("\nMenu Principal:\n");
-        printf("1. Login\n");
-        printf("2. Cadastrar Usuário\n");
-        printf("0. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
+    printf("\n\n\n\n\n\n\n\n\n _______________________\n");
+    printf("| Menu Principal:       |\n");
+    printf("|-----------------------|\n");
+    printf("| 1. Login              |\n");
+    printf("| 2. Cadastrar Usuário  |\n");
+    printf("| 0. Sair               |\n");
+    printf("|-----------------------|\n");
+    printf("| Escolha uma opção:    | ");
+    printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+    scanf("%d", &opcao);
+    printf("|_______________________|\n");
         limparBuffer();
 
         switch (opcao) {
@@ -588,7 +595,7 @@ void salvarUsuarios() {
 }
 
 int main() {
-    system("color E0");
+    system("color E4");
     setlocale(LC_ALL, "Portuguese");
     carregarProdutos();
     carregarUsuarios();
