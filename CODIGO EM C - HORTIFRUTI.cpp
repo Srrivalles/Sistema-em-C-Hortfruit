@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <locale.h>
-#include <conio.h>
+
 
 #define MAX_PRODUTOS 100
 #define MAX_CLIENTES 100
@@ -56,7 +56,7 @@ void cadastrarProduto();
 void listarProdutos();
 void atualizarEstoque();
 void relatorioEstoqueBaixo();
-void excluirProduto();
+void alterarProduto();
 void carregarProdutos();
 void salvarProdutos();
 
@@ -78,7 +78,19 @@ int verificarLogin();
 void cadastrarUsuario();
 void carregarUsuarios();
 void salvarUsuarios();
+void LP();
+void PA();
 
+
+//fazendo o código ficar portável para linux e macOS sem "cls' e "pause"
+
+void LP(){
+	system("clear");
+}
+void PA(){
+	printf("Pressione qualquer teclar para continuar...");
+	getchar();
+}
 // Implementações das funções
 void cadastrarProduto() {
     if (total_produtos < MAX_PRODUTOS) {
@@ -88,7 +100,7 @@ void cadastrarProduto() {
         fgets(novo_produto.nome, sizeof(novo_produto.nome), stdin);
         novo_produto.nome[strcspn(novo_produto.nome, "\n")] = 0;
         if (strcmp(novo_produto.nome, "0") == 0) {
-    	system("cls");
+    	LP();
     	return; // Cancela e volta ao menu anterior
 }
 
@@ -112,7 +124,7 @@ void cadastrarProduto() {
         produtos[total_produtos] = novo_produto;
         total_produtos++;
         salvarProdutos();  // Salva após cadastrar
-        system("cls");
+        LP();
         printf("\nPRODUTO CADASTRADO COM SUCESSO!\n");
     } else {
         printf("Limite de produtos atingido.\n");
@@ -121,7 +133,7 @@ void cadastrarProduto() {
 
 
 void listarProdutos() {
-	system("cls");
+	LP();
     int i;
     printf("\nProdutos Disponiveis: \n");
     for (i = 0; i < total_produtos; i++) {
@@ -138,7 +150,7 @@ void listarProdutos() {
 }
 
 void atualizarEstoque() {
-	system("cls");
+	LP();
     char nome[50];
     int quantidade;
     listarProdutos();
@@ -156,7 +168,7 @@ void atualizarEstoque() {
             scanf("%d", &quantidade);
             limparBuffer();
             produtos[i].quantidade = quantidade;
-            system("cls");
+            LP();
             printf("\nEstoque Atualizado com Sucesso para %s!\n", produtos[i].nome);
             salvarProdutos(); // Salva após atualizar
             return;
@@ -166,57 +178,101 @@ void atualizarEstoque() {
 }
 
 void relatorioEstoqueBaixo() {
-    system("cls");
+    LP();
     int i;
     printf("\n\nProdutos com estoque baixo (Menor que 10 unidades): \n");
     for (i = 0; i < total_produtos; i++) {
         if (produtos[i].quantidade < 10) {
-            printf("%s  ||  Código: %s  ||  Unidades Disponíveis: %d %s\n", produtos[i].nome, produtos[i].codigo, produtos[i].quantidade);
+    printf("%s  ||  Código: %s  ||  Unidades Disponíveis: %d\n", produtos[i].nome, produtos[i].codigo, produtos[i].quantidade);
+
+
         }
     }
 }
 
 
-void excluirProduto() {
-	system("cls");
+void alterarProduto() {
+    LP();
     char codigo[20];
     listarProdutos();
 
-    printf("\n\n\n\nCódigo do Produto a Ser Excluído do Estoque: ");
+    printf("\n\n\n\nCódigo do Produto a Ser Alterado: ");
     fgets(codigo, sizeof(codigo), stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
-    int i;
-    for (i = 0; i < total_produtos; i++) {
+    int encontrado = 0;
+    for (int i = 0; i < total_produtos; i++) {
         if (strcmp(produtos[i].codigo, codigo) == 0) {
-            int j;
-            for (j = i; j < total_produtos - 1; j++) {
-                produtos[j] = produtos[j + 1];
-            }
-            total_produtos--;
-            system("cls");
-            printf("\nProduto Excluído Com Sucesso!\n");
-            salvarProdutos(); // Salva após excluir
+            encontrado = 1;
+
+            printf("\nProduto encontrado: %s\n", produtos[i].nome);
+            printf("Insira os novos dados do produto:\n");
+
+            printf("Nome do Produto: ");
+            fgets(produtos[i].nome, sizeof(produtos[i].nome), stdin);
+            produtos[i].nome[strcspn(produtos[i].nome, "\n")] = 0;
+
+            printf("Preço do Produto: R$ ");
+            scanf("%f", &produtos[i].preco);
+            limparBuffer();
+
+            printf("Quantidade em Estoque: ");
+            scanf("%d", &produtos[i].quantidade);
+            limparBuffer();
+
+            printf("Produto é vendido por peso? (1 para Sim, 0 para Não): ");
+            scanf("%d", &produtos[i].vendido_por_peso);
+            limparBuffer();
+
+            LP();
+            printf("\nProduto alterado com sucesso!\n");
+            salvarProdutos(); // Salva as alterações feitas no produto
             return;
         }
     }
-    system("cls");
-    printf("\nProduto não encontrado.\n");
+
+    if (!encontrado) {
+        LP();
+        printf("\nProduto não encontrado.\n");
+    }
 }
 
-// Funções de compras e reembolso
-float balancaVirtual() {
-    float peso;
-    printf("Digite o peso (em kg): ");
-    scanf("%f", &peso);
-    limparBuffer();
-    return peso;
+
+void finalizarCompra() {
+    LP();
+    if (total_carrinho == 0) {
+        printf("\nNenhum produto no carrinho para finalizar.\n");
+        return; // Retorna se não há produtos no carrinho
+    }
+
+    float total = 0.0f;
+    printf("----------------------------------------------------------\n");
+    printf("                   Resumo da Compra:\n");
+    printf("----------------------------------------------------------\n");
+    for (int i = 0; i < total_carrinho; i++) {
+        if (carrinho[i].peso > 0) {
+            printf(" Produto: %s\n", carrinho[i].produto.nome);
+            printf(" Peso: %.2f kg\n", carrinho[i].peso);
+            printf(" Preço: R$ %.2f\n", carrinho[i].produto.preco * carrinho[i].peso);
+            total += carrinho[i].produto.preco * carrinho[i].peso;
+        } else {
+            printf(" Produto: %s\n", carrinho[i].produto.nome);
+            printf(" Quantidade: %d\n", carrinho[i].quantidade);
+            printf(" Preço: R$ %.2f\n", carrinho[i].produto.preco * carrinho[i].quantidade);
+            total += carrinho[i].produto.preco * carrinho[i].quantidade;
+        }
+        printf("----------------------------------------------------------\n");
+    }
+    printf("Total da compra: R$ %.2f\n", total);
+    printf("----------------------------------------------------------\n");
+    printf("Compra finalizada com sucesso! Obrigado pela sua compra!\n");
 }
 
 void adicionarAoCarrinho() {
-    system("cls");
+    LP();
     char codigo[20];
     int quantidade;
+
     while (1) {
         listarProdutos(); // Exibe os produtos disponíveis
 
@@ -225,8 +281,33 @@ void adicionarAoCarrinho() {
         codigo[strcspn(codigo, "\n")] = 0;
 
         if (strcmp(codigo, "0") == 0) {
-            system("cls");
+            LP();
             printf("\nProdutos adicionados ao Carrinho!\n");
+
+            // Finaliza a compra e gera o código de reembolso
+            float total = 0.0;
+            for (int i = 0; i < total_carrinho; i++) {
+                if (carrinho[i].peso > 0) {
+                    total += carrinho[i].produto.preco * carrinho[i].peso;
+                } else {
+                    total += carrinho[i].produto.preco * carrinho[i].quantidade;
+                }
+            }
+
+            if (total > 0) {
+                char codigo_reembolso[20];
+                gerarCodigoReembolso(codigo_reembolso); // Gera o código de reembolso
+                registrarCompra(codigo_reembolso, total); // Registra a compra
+
+                printf("\nCompra realizada com sucesso! Total: R$%.2f\n", total);
+                printf("\nCódigo de reembolso: %s\n", codigo_reembolso); // Exibe o código de reembolso
+                total_carrinho = 0; // Limpa o carrinho após a compra
+            } else {
+                LP();
+                printf("\nCarrinho vazio. Adicione produtos antes de finalizar a compra.\n\n");
+                PA();
+                LP();
+            }
             break; // Finaliza a adição de produtos ao carrinho
         }
 
@@ -242,29 +323,8 @@ void adicionarAoCarrinho() {
                 printf(" Estoque:   %d\n", produtos[i].quantidade);
                 printf("----------------------------------------------------------\n");
 
-                // Verifica se o estoque do produto é maior que zero
-                if (produtos[i].quantidade <= 0) {
-                	system("cls");
-                    printf("\nProduto sem estoque disponível.\n");
-                    return; // Retorna ao menu sem adicionar o produto
-                }
-
-                // Verifica se o produto é vendido por peso
-                if (produtos[i].vendido_por_peso) {
-                    float peso = balancaVirtual();
-                    if (peso > 0) {
-                        if (peso <= produtos[i].quantidade) {
-                            carrinho[total_carrinho].produto = produtos[i];
-                            carrinho[total_carrinho].peso = peso;
-                            carrinho[total_carrinho].quantidade = 0; // Não aplica quantidade
-                            total_carrinho++;
-                            produtos[i].quantidade -= (int)peso; // Atualiza o estoque
-                            printf("\nProduto adicionado ao carrinho!\n");
-                        } else {
-                            printf("\nPeso excede o estoque disponível.\n");
-                        }
-                    }
-                } else {
+                // Verifica o estoque e adiciona o produto ao carrinho
+                if (produtos[i].quantidade > 0) {
                     printf("\nQuantidade a adicionar ao carrinho (ou 0 para cancelar): ");
                     scanf("%d", &quantidade);
                     limparBuffer();
@@ -272,29 +332,33 @@ void adicionarAoCarrinho() {
                     if (quantidade > 0 && quantidade <= produtos[i].quantidade) {
                         carrinho[total_carrinho].produto = produtos[i];
                         carrinho[total_carrinho].quantidade = quantidade;
-                        carrinho[total_carrinho].peso = 0; // Não aplica peso
+                        carrinho[total_carrinho].peso = 0;
                         total_carrinho++;
                         produtos[i].quantidade -= quantidade; // Atualiza o estoque
                         printf("\nProduto adicionado ao carrinho!\n");
                     } else {
                         printf("\nQuantidade inválida ou insuficiente.\n");
                     }
+                } else {
+                    LP();
+                    printf("\nProduto sem estoque disponível.\n");
                 }
+
                 salvarProdutos(); // Salva o novo estoque após a adição
                 break;
             }
         }
 
         if (!encontrado) {
-            printf("\nProduto não Encontrado.\n\n");
-            system("pause");
-    		system("cls");
+            printf("\nProduto não encontrado.\n\n");
+            LP();
+            PA();
         }
     }
 }
 
 void realizarCompra() {
-    system("cls");
+    LP();
     float total = 0.0;
 
     for (int i = 0; i < total_carrinho; i++) {
@@ -313,10 +377,10 @@ void realizarCompra() {
         printf("\nCódigo de reembolso: %s\n", codigo_reembolso);
         total_carrinho = 0; // Limpa o carrinho após a compra
     } else {
-    	system("cls");
+    	LP();
         printf("\nCarrinho vazio. Adicione produtos antes de finalizar a compra.\n\n");
-        system("pause");
-    	system("cls");
+        PA();
+    	LP();
     }
 }
 
@@ -348,14 +412,14 @@ void verificarReembolso() {
     for (i = 0; i < total_clientes; i++) {
         if (strcmp(clientes[i].codigo_reembolso, codigo) == 0) {
             if (clientes[i].utilizado) {
-            	system("cls");
+            	LP();
                 printf("\nEste código de reembolso já foi utilizado.\n");
-                system("pause");
-    			system("cls");
+                PA();
+    			LP();
                 return;
             }
             if (verificarReembolsoValido(clientes[i].timestamp)) {
-                system("cls");
+                LP();
                 printf("\nReembolso Válido: R$%.2f\n", clientes[i].total);
                 // Restaurar a quantidade de produtos
                 float valor_reembolsado = clientes[i].total;
@@ -377,27 +441,26 @@ void verificarReembolso() {
             return;
         }
     }
-    system("cls");
+    LP();
     printf("\n\n\n\nCódigo de reembolso não encontrado.\n");
-    system("pause");
-    system("cls");
+    PA();
+    LP();
 }
 
 
 // Funções de login e gerenciamento de usuários
 void exibirMenuPrincipal() {
+    LP();
     int opcao;
-    char I;
-    system("cls");
     while (1) {
-        printf("\n\n\n\n\n\n\n\n\n ________________________\n");
+        printf("\n\n\n\n\n\n\ ________________________\n");
         printf("| Menu Principal:        |\n");
         printf("|------------------------|\n");
         printf("| 1. Login               |\n");
-        printf("| 2. Cadastrar Usuário  |\n");
+        printf("| 2. Cadastrar Usuário   |\n");
         printf("| 0. Sair                |\n");
         printf("|------------------------|\n");
-        printf("| Escolha uma opção:   | ");
+        printf("| Escolha uma opção:     | ");
         printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
         scanf("%d", &opcao);
         printf("|________________________|\n");
@@ -406,7 +469,10 @@ void exibirMenuPrincipal() {
         switch (opcao) {
             case 1:
                 if (verificarLogin()) {
+                    printf("\nLogado com sucesso!\n"); // Mensagem de login bem-sucedido
+                    PA();
                     exibirMenuEscolha();
+                    
                 }
                 break;
             case 2:
@@ -416,28 +482,27 @@ void exibirMenuPrincipal() {
                 printf("\n\nObrigado por usar nosso Sistema!");
                 exit(0);
             default:
-                system("cls");
+                LP();
                 printf("\nOpção inválida.\n\n");
-                system("pause");
-    			system("cls");
+                PA();
+                LP();
         }
     }
 }
 
+
 void exibirMenuEscolha() {
     int opcao;
-    system("cls");
-    printf("\n ________________________\n");
-    printf("   LOGADO COM SUCESSO!    \n");
+    LP();
+    
     while (1) {
     	printf("\n\n\n\n\n\n\n\n\n __________________________\n");
         printf("| 1. Adicionar ao Carrinho |\n");
-        printf("| 2. Finalizar Compra      |\n");
-        printf("| 3. Gerenciar Produtos    |\n");
-        printf("| 4. Verificar Reembolso   |\n");
+        printf("| 2. Gerenciar Produtos    |\n");
+        printf("| 3. Verificar Reembolso   |\n");
         printf("| 0. Sair                  |\n");
         printf("|--------------------------|\n");
-        printf("| Escolha uma opção:     | ");
+        printf("| Escolha uma opção:       | ");
         printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
         scanf("%d", &opcao);
         printf("|_______________________|\n");
@@ -448,38 +513,35 @@ void exibirMenuEscolha() {
                 adicionarAoCarrinho();
                 break;
             case 2:
-                realizarCompra();
-                break;
-            case 3:
                 exibirMenuLogistica();
                 break;
-            case 4:
-                verificarReembolso();
+            case 3:
+                 verificarReembolso();
                 break;
             case 0:
-                system("cls");
+                LP();
                 return;
             default:
-                system("cls");
+                LP();
                 printf("Opção inválida.\n\n");
-                system("pause");
-    			system("cls");
+                PA();
+    			LP();
         }
     }
 }
 
 void exibirMenuLogistica() {
     int opcao;
-    system("cls");
+	LP();
     while (1) {
     	printf("\n\n\n\n\n\n\n\n\n _______________________________\n");
-    	printf("|     Menu de Logística        |\n");
+    	printf("|     Menu de Logística         |\n");
     	printf("|-------------------------------|\n");
         printf("| 1. Cadastrar Produto      	|\n");
         printf("| 2. Listar Produtos        	|\n");
         printf("| 3. Atualizar Estoque      	|\n");
-        printf("| 4. Relatório de Estoque Baixo|\n");
-        printf("| 5. Excluir Produto        	|\n");
+        printf("| 4. Relatório de Estoque Baixo |\n");
+        printf("| 5. Alterar Produto         	|\n");
         printf("| 0. Voltar                 	|\n");
         printf("|-------------------------------|\n");
         printf("| Escolha uma opção:        	| ");
@@ -503,16 +565,16 @@ void exibirMenuLogistica() {
                 relatorioEstoqueBaixo();
                 break;
             case 5:
-                excluirProduto();
+                alterarProduto();
                 break;
             case 0:
-                system("cls");
+                LP();
                 return;
             default:
-                system("cls");
+                LP();
                 printf("Opção inválida.\n\n");
-                system("pause");
-    			system("cls");
+                PA();
+				LP();
         }
     }
 }
@@ -522,7 +584,7 @@ void limparBuffer() {
 }
 
 int verificarLogin() {
-	system("cls");
+	LP();
     char username[20], password[20];
     printf("\nLogando...\n");
     printf("\nNome de usúario: ");
@@ -539,10 +601,10 @@ int verificarLogin() {
             return 1; // Login bem-sucedido
         }
     }
-    system("cls");
+    LP();
     printf("\n\n\n\n\nLogin Falhou.\n");
-    system("pause");
-    system("cls");
+    PA();
+    LP();
     return 0; // Login falhou
 }
 
@@ -560,16 +622,16 @@ void cadastrarUsuario() {
         printf("\nTipo de usuário (1: Caixa, 2: Logística): ");
         scanf("%d", &novo_usuario.tipo);
         limparBuffer();
-        system("cls");
+        LP();
         usuarios[total_usuarios++] = novo_usuario;
         salvarUsuarios(); // Salva após cadastrar
     } else {
         printf("Limite de usuários atingido.\n");
     }
-    system("cls");
+    LP();
     printf("\nCADASTRADO COM SUCESSO!\n\n");
-    system("pause");
-    system("cls");
+    PA();
+    LP();
 }
 
 void carregarProdutos() {
@@ -627,7 +689,7 @@ void salvarUsuarios() {
 }
 
 int main() {
-    system("color E4");
+    
     setlocale(LC_ALL, "Portuguese");
     carregarProdutos();
     carregarUsuarios();
