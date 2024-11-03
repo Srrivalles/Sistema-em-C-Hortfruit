@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 #include <locale.h>
 
 #define MAX_REEMBOLSOS 5
@@ -26,6 +27,7 @@ struct Cliente {
     float total;
     time_t timestamp;
     int utilizado; // 0: não utilizado, 1: utilizado
+    char produtos[5][50]; // Para armazenar os últimos 5 produtos relacionados ao reembolso
 };
 
 struct Usuario {
@@ -51,8 +53,8 @@ int total_produtos = 0;
 int total_clientes = 0;
 int total_usuarios = 0;
 
-
-
+char historico_reembolsos[MAX_REEMBOLSOS][20]; 
+int total_reembolsos = 0;
 
 // Funções de gerenciamento de produtos
 void cadastrarProduto();
@@ -69,8 +71,7 @@ void gerarCodigoReembolso(char *codigo);
 void registrarCompra(const char *codigo_reembolso, float total);
 void verificarReembolso();
 int verificarReembolsoValido(time_t timestamp);
-char historico_reembolsos[MAX_REEMBOLSOS][20]; 
-int total_reembolsos = 0;
+void adicionarReembolsoAoHistorico(const char* codigo_reembolso);
 float balancaVirtual();
 
 // Funções de login, menu e utilitários
@@ -90,10 +91,11 @@ void PA();
 //fazendo o código ficar portável para linux e macOS sem "cls' e "pause"
 
 void LP(){
-	system("clear");
+	system("clear");   // se quiser usar no linux ou mac, remova as barras.
+	// system("cls");       
 }
 void PA(){
-	printf("Pressione qualquer teclar para continuar...");
+	printf("\nPressione 'ENTER' para continuar...");
 	getchar();
 }
 // Implementações das funções
@@ -101,18 +103,29 @@ void cadastrarProduto() {
     if (total_produtos < MAX_PRODUTOS) {
         struct Produto novo_produto;
 
-        printf("Digite o nome do produto (Ou digite '0' para Cancelar): ");
+        printf("\nDigite o nome do produto (Ou digite '0' para Cancelar): ");
         fgets(novo_produto.nome, sizeof(novo_produto.nome), stdin);
-        novo_produto.nome[strcspn(novo_produto.nome, "\n")] = 0;
-        if (strcmp(novo_produto.nome, "0") == 0) {
-    	LP();
-    	return; // Cancela e volta ao menu anterior
-}
+        novo_produto.nome[strcspn(novo_produto.nome, "\n")] = 0; // Remove o '\n'
 
+        // Converte o nome do produto para maiúsculas
+        for (int i = 0; novo_produto.nome[i] != '\0'; i++) {
+            novo_produto.nome[i] = toupper((unsigned char)novo_produto.nome[i]);
+        }
+
+        // Verifica se o usuário deseja cancelar
+        if (strcmp(novo_produto.nome, "0") == 0) {
+            LP();
+            return; // Cancela e volta ao menu anterior
+        }
 
         printf("Digite o código do produto: ");
         fgets(novo_produto.codigo, sizeof(novo_produto.codigo), stdin);
-        novo_produto.codigo[strcspn(novo_produto.codigo, "\n")] = 0;
+        novo_produto.codigo[strcspn(novo_produto.codigo, "\n")] = 0; // Remove o '\n'
+
+        // Converte o código do produto para maiúsculas
+        for (int i = 0; novo_produto.codigo[i] != '\0'; i++) {
+            novo_produto.codigo[i] = toupper((unsigned char)novo_produto.codigo[i]);
+        }
 
         printf("Digite o preço do produto: ");
         scanf("%f", &novo_produto.preco);
@@ -126,9 +139,10 @@ void cadastrarProduto() {
         scanf("%d", &novo_produto.vendido_por_peso);
         limparBuffer();
 
+        // Armazena o novo produto e incrementa o contador de produtos
         produtos[total_produtos] = novo_produto;
         total_produtos++;
-        salvarProdutos();  // Salva após cadastrar
+        salvarProdutos(); // Salva após cadastrar
         LP();
         printf("\nPRODUTO CADASTRADO COM SUCESSO!\n");
     } else {
@@ -148,7 +162,6 @@ void listarProdutos() {
 		printf(" Preço:    R$ %.2f\n", produtos[i].preco);
 		printf(" Unidades:  %d %s\n", produtos[i].quantidade,
 		       produtos[i].vendido_por_peso ? "(Vendido em KG)" : "(Unidades)");
-		printf("------------------------------------------------------------");
 
 
     }
@@ -160,32 +173,38 @@ void atualizarEstoque() {
     int quantidade;
     listarProdutos();
 
-    printf("\nDigite o nome do produto para atualizar o estoque: ");
+    printf("\n\nDigite o nome do produto para atualizar o estoque: ");
     fgets(nome, sizeof(nome), stdin);
     nome[strcspn(nome, "\n")] = 0;
-
+    
     int i;
     for (i = 0; i < total_produtos; i++) {
         if (strcmp(produtos[i].nome, nome) == 0) {
         	system("cls");
-            printf("\nQuantidade Atual: %d\n", produtos[i].quantidade);
+            printf("\n\n\n\n\n\n\nQuantidade Atual: %d\n", produtos[i].quantidade);
             printf("\nDigite a Nova Quantidade de Produtos: ");
             scanf("%d", &quantidade);
             limparBuffer();
             produtos[i].quantidade = quantidade;
             LP();
-            printf("\nEstoque Atualizado com Sucesso para %s!\n", produtos[i].nome);
+            printf("\n\n\n\n\n\n\Estoque Atualizado com Sucesso para %s!\n", produtos[i].nome);
+            PA();
+            LP();
             salvarProdutos(); // Salva após atualizar
             return;
         }
     }
-    printf("\nProduto não encontrado.\n");
+    LP();
+    printf("\n\n\n\n\nProduto não encontrado.\n");
+    PA();
+    LP();
+    
 }
 
 void relatorioEstoqueBaixo() {
     LP();
     int i;
-    printf("\n\nProdutos com estoque baixo (Menor que 10 unidades): \n");
+    printf("Produtos com estoque baixo (Menor que 10 unidades): \n");
     for (i = 0; i < total_produtos; i++) {
         if (produtos[i].quantidade < 10) {
     printf("%s  ||  Código: %s  ||  Unidades Disponíveis: %d\n", produtos[i].nome, produtos[i].codigo, produtos[i].quantidade);
@@ -201,7 +220,7 @@ void alterarProduto() {
     char codigo[20];
     listarProdutos();
 
-    printf("\n\n\n\nCódigo do Produto a Ser Alterado: ");
+    printf("\n\nCódigo do Produto a Ser Alterado: ");
     fgets(codigo, sizeof(codigo), stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
@@ -210,7 +229,7 @@ void alterarProduto() {
         if (strcmp(produtos[i].codigo, codigo) == 0) {
             encontrado = 1;
 
-            printf("\nProduto encontrado: %s\n", produtos[i].nome);
+            printf("\nProduto encontrado: %s\n\n", produtos[i].nome);
             printf("Insira os novos dados do produto:\n");
 
             printf("Nome do Produto: ");
@@ -225,7 +244,7 @@ void alterarProduto() {
             scanf("%d", &produtos[i].quantidade);
             limparBuffer();
 
-            printf("Produto é vendido por peso? (1 para Sim, 0 para Não): ");
+            printf("\nProduto é vendido por peso? (1 para Sim, 0 para Não): ");
             scanf("%d", &produtos[i].vendido_por_peso);
             limparBuffer();
 
@@ -251,14 +270,13 @@ void finalizarCompra() {
     }
 
     float total = 0.0f;
-    printf("----------------------------------------------------------\n");
     printf("                   Resumo da Compra:\n");
     printf("----------------------------------------------------------\n");
     for (int i = 0; i < total_carrinho; i++) {
         if (carrinho[i].peso > 0) {
             printf(" Produto: %s\n", carrinho[i].produto.nome);
             printf(" Peso: %.2f kg\n", carrinho[i].peso);
-            printf(" Preço: R$ %.2f\n", carrinho[i].produto.preco * carrinho[i].peso);
+            printf(" Preço: R$ %.2f\n\n", carrinho[i].produto.preco * carrinho[i].peso);
             total += carrinho[i].produto.preco * carrinho[i].peso;
         } else {
             printf(" Produto: %s\n", carrinho[i].produto.nome);
@@ -266,11 +284,10 @@ void finalizarCompra() {
             printf(" Preço: R$ %.2f\n", carrinho[i].produto.preco * carrinho[i].quantidade);
             total += carrinho[i].produto.preco * carrinho[i].quantidade;
         }
-        printf("----------------------------------------------------------\n");
     }
-    printf("Total da compra: R$ %.2f\n", total);
+    printf(" Total da compra: R$ %.2f\n", total);
     printf("----------------------------------------------------------\n");
-    printf("Compra finalizada com sucesso! Obrigado pela sua compra!\n");
+    printf("\nCompra finalizada com sucesso! Obrigado pela sua compra!\n");
 }
 
 void adicionarAoCarrinho() {
@@ -304,12 +321,13 @@ void adicionarAoCarrinho() {
                 gerarCodigoReembolso(codigo_reembolso); // Gera o código de reembolso
                 registrarCompra(codigo_reembolso, total); // Registra a compra
 
-                printf("\nCompra realizada com sucesso! Total: R$%.2f\n", total);
+                //printf("\nCompra realizada com sucesso! Total: R$%.2f\n", total);
+                finalizarCompra();
                 printf("\nCódigo de reembolso: %s\n", codigo_reembolso); // Exibe o código de reembolso
                 total_carrinho = 0; // Limpa o carrinho após a compra
             } else {
                 LP();
-                printf("\nCarrinho vazio. Adicione produtos antes de finalizar a compra.\n\n");
+                printf("\n\n\n\n\n\n\nCarrinho vazio. Adicione produtos antes de finalizar a compra.\n\n");
                 PA();
                 LP();
             }
@@ -320,6 +338,7 @@ void adicionarAoCarrinho() {
         for (int i = 0; i < total_produtos; i++) {
             if (strcmp(produtos[i].codigo, codigo) == 0) {
                 encontrado = 1;
+                LP();
                 printf("----------------------------------------------------------\n");
                 printf("           Produto encontrado:\n");
                 printf("----------------------------------------------------------\n");
@@ -340,13 +359,16 @@ void adicionarAoCarrinho() {
                         carrinho[total_carrinho].peso = 0;
                         total_carrinho++;
                         produtos[i].quantidade -= quantidade; // Atualiza o estoque
-                        printf("\nProduto adicionado ao carrinho!\n");
+                        printf("\n\nProduto adicionado ao carrinho!\n\n");
+                        PA();
                     } else {
-                        printf("\nQuantidade inválida ou insuficiente.\n");
+                        printf("\n\nQuantidade inválida ou insuficiente.\n\n");
+                        PA();
                     }
                 } else {
                     LP();
-                    printf("\nProduto sem estoque disponível.\n");
+                    printf("\n\nProduto sem estoque disponível.\n");
+                    PA();
                 }
 
                 salvarProdutos(); // Salva o novo estoque após a adição
@@ -355,9 +377,10 @@ void adicionarAoCarrinho() {
         }
 
         if (!encontrado) {
-            printf("\nProduto não encontrado.\n\n");
-            LP();
+        	LP();
+            printf("\n\n\n\n\n\n\n\nProduto não encontrado.\n\n");
             PA();
+            LP();
         }
     }
 }
@@ -399,7 +422,14 @@ void registrarCompra(const char *codigo_reembolso, float total) {
     novo_cliente.total = total;
     novo_cliente.timestamp = time(NULL);
     novo_cliente.utilizado = 0; // Inicializa como não utilizado
+
+    // Adiciona os produtos do carrinho ao cliente
+    for (int i = 0; i < total_carrinho && i < 5; i++) {
+        strcpy(novo_cliente.produtos[i], carrinho[i].produto.nome); // Armazena os nomes dos produtos
+    }
+
     clientes[total_clientes++] = novo_cliente;
+    adicionarReembolsoAoHistorico(codigo_reembolso); // Adiciona o código de reembolso ao histórico
 }
 
 
@@ -423,10 +453,21 @@ void adicionarReembolsoAoHistorico(const char* codigo_reembolso) {
 void verificarReembolso() {
     LP();
 
-    // Exibe os últimos cinco códigos de reembolso
-    printf("\nÚltimos %d códigos de reembolso:\n", total_reembolsos < MAX_REEMBOLSOS ? total_reembolsos : MAX_REEMBOLSOS);
+    // Exibe os últimos cinco códigos de reembolso e seus produtos associados
+    printf("\nÚltimos %d códigos de reembolso e produtos:\n", total_reembolsos < MAX_REEMBOLSOS ? total_reembolsos : MAX_REEMBOLSOS);
     for (int i = 0; i < total_reembolsos; i++) {
-        printf("- %s\n", historico_reembolsos[i]);
+        printf("- Código: %s\n", historico_reembolsos[i]);
+        // Exibe os produtos relacionados a esse código de reembolso
+        for (int j = 0; j < total_clientes; j++) {
+            if (strcmp(clientes[j].codigo_reembolso, historico_reembolsos[i]) == 0) {
+                printf("  Produtos: ");
+                for (int k = 0; k < 5 && strlen(clientes[j].produtos[k]) > 0; k++) {
+                    printf("%s ", clientes[j].produtos[k]);
+                }
+                printf("\n\n");
+                break; // Para não exibir mais de uma vez o mesmo código
+            }
+        }
     }
 
     // Solicita o código de reembolso ao usuário
@@ -446,8 +487,12 @@ void verificarReembolso() {
 
     if (encontrado) {
         printf("\nReembolso válido.\n");
+        PA();
+        LP();
     } else {
         printf("\nCódigo de reembolso inválido.\n");
+        PA();
+        LP();
     }
 }
 
@@ -457,14 +502,14 @@ void exibirMenuPrincipal() {
     LP();
     int opcao;
     while (1) {
-        printf("\n\n\n\n\n\n\ ________________________\n");
-        printf("| Menu Principal:        |\n");
+        printf("\n\n\n\n\n\n ________________________\n");
+        printf("|     Menu Principal:    |\n");
         printf("|------------------------|\n");
         printf("| 1. Login               |\n");
-        printf("| 2. Cadastrar Usuário   |\n");
+        printf("| 2. Cadastrar Usuário  |\n");
         printf("| 0. Sair                |\n");
         printf("|------------------------|\n");
-        printf("| Escolha uma opção:     | ");
+        printf("| Escolha uma opção:   | ");
         printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
         scanf("%d", &opcao);
         printf("|________________________|\n");
@@ -473,7 +518,7 @@ void exibirMenuPrincipal() {
         switch (opcao) {
             case 1:
                 if (verificarLogin()) {
-                    printf("\nLogado com sucesso!\n"); 
+                    printf("\n\nLogado com sucesso!\n"); 
                     PA();
                     exibirMenuEscolha();
                     
@@ -500,16 +545,18 @@ void exibirMenuEscolha() {
     LP();
     
     while (1) {
-    	printf("\n\n\n\n\n\n\n\n\n __________________________\n");
+    	printf("\n\n\n\n\n\n __________________________\n");
+        printf("|     Menu do Caixa:       |\n");
+        printf("|--------------------------|\n");
         printf("| 1. Adicionar ao Carrinho |\n");
         printf("| 2. Gerenciar Produtos    |\n");
         printf("| 3. Verificar Reembolso   |\n");
         printf("| 0. Sair                  |\n");
         printf("|--------------------------|\n");
-        printf("| Escolha uma opção:       | ");
+        printf("| Escolha uma opção:     | ");
         printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
         scanf("%d", &opcao);
-        printf("|_______________________|\n");
+        printf("|__________________________|\n");
         limparBuffer();
         
         switch (opcao) {
@@ -538,13 +585,13 @@ void exibirMenuLogistica() {
     int opcao;
 	LP();
     while (1) {
-    	printf("\n\n\n\n\n\n\n\n\n _______________________________\n");
-    	printf("|     Menu de Logística         |\n");
+    	printf("\n\n\n\n\n\n _______________________________\n");
+    	printf("|       Menu de Logística      |\n");
     	printf("|-------------------------------|\n");
         printf("| 1. Cadastrar Produto      	|\n");
         printf("| 2. Listar Produtos        	|\n");
         printf("| 3. Atualizar Estoque      	|\n");
-        printf("| 4. Relatório de Estoque Baixo |\n");
+        printf("| 4. Relatório de Estoque Baixo|\n");
         printf("| 5. Alterar Produto         	|\n");
         printf("| 0. Voltar                 	|\n");
         printf("|-------------------------------|\n");
@@ -590,8 +637,8 @@ void limparBuffer() {
 int verificarLogin() {
 	LP();
     char username[20], password[20];
-    printf("\nLogando...\n");
-    printf("\nNome de usúario: ");
+    printf("\n\nLogando...\n");
+    printf("\n\n\n\nNome de usúario: ");
     fgets(username, sizeof(username), stdin);
     username[strcspn(username, "\n")] = 0;
 
@@ -606,7 +653,7 @@ int verificarLogin() {
         }
     }
     LP();
-    printf("\n\n\n\n\nLogin Falhou.\n");
+    printf("\n\n\n\n\n\n\n\nLogin Falhou.\n");
     PA();
     LP();
     return 0; // Login falhou
@@ -631,7 +678,7 @@ void cadastrarUsuario() {
         printf("Limite de usuários atingido.\n");
     }
     LP();
-    printf("\nCADASTRADO COM SUCESSO!\n\n");
+    printf("\n\n\n\n\n\n\n\n\n\nCADASTRADO COM SUCESSO!\n\n");
     PA();
     LP();
 }
@@ -653,8 +700,12 @@ void carregarProdutos() {
 void salvarProdutos() {
     FILE *file = fopen(ARQUIVO_PRODUTOS, "w");
     if (file) {
-        int i;
+        int i, j;
         for (i = 0; i < total_produtos; i++) {
+            for (j = 0; produtos[i].nome[j] != '\0'; j++) {
+                produtos[i].nome[j] = toupper((unsigned char)produtos[i].nome[j]);
+            }
+
             fprintf(file, "%s;%s;%.2f;%d;%d\n", produtos[i].nome,
                     produtos[i].codigo,
                     produtos[i].preco,
