@@ -4,7 +4,7 @@
 #include <time.h>
 #include <locale.h>
 
-
+#define MAX_REEMBOLSOS 5
 #define MAX_PRODUTOS 100
 #define MAX_CLIENTES 100
 #define MAX_USUARIOS 50
@@ -51,6 +51,9 @@ int total_produtos = 0;
 int total_clientes = 0;
 int total_usuarios = 0;
 
+
+
+
 // Funções de gerenciamento de produtos
 void cadastrarProduto();
 void listarProdutos();
@@ -66,6 +69,8 @@ void gerarCodigoReembolso(char *codigo);
 void registrarCompra(const char *codigo_reembolso, float total);
 void verificarReembolso();
 int verificarReembolsoValido(time_t timestamp);
+char historico_reembolsos[MAX_REEMBOLSOS][20]; 
+int total_reembolsos = 0;
 float balancaVirtual();
 
 // Funções de login, menu e utilitários
@@ -402,49 +407,48 @@ int verificarReembolsoValido(time_t timestamp) {
     return difftime(time(NULL), timestamp) <= VALIDADE_REEMBOLSO;
 }
 
+void adicionarReembolsoAoHistorico(const char* codigo_reembolso) {
+    // Desloca os reembolsos para abrir espaço para o novo no final do array
+    if (total_reembolsos < MAX_REEMBOLSOS) {
+        strcpy(historico_reembolsos[total_reembolsos], codigo_reembolso);
+        total_reembolsos++;
+    } else {
+        for (int i = 1; i < MAX_REEMBOLSOS; i++) {
+            strcpy(historico_reembolsos[i - 1], historico_reembolsos[i]);
+        }
+        strcpy(historico_reembolsos[MAX_REEMBOLSOS - 1], codigo_reembolso);
+    }
+}
+
 void verificarReembolso() {
+    LP();
+
+    // Exibe os últimos cinco códigos de reembolso
+    printf("\nÚltimos %d códigos de reembolso:\n", total_reembolsos < MAX_REEMBOLSOS ? total_reembolsos : MAX_REEMBOLSOS);
+    for (int i = 0; i < total_reembolsos; i++) {
+        printf("- %s\n", historico_reembolsos[i]);
+    }
+
+    // Solicita o código de reembolso ao usuário
     char codigo[20];
     printf("\nDigite o código de reembolso: ");
     fgets(codigo, sizeof(codigo), stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
-    int i;
-    for (i = 0; i < total_clientes; i++) {
-        if (strcmp(clientes[i].codigo_reembolso, codigo) == 0) {
-            if (clientes[i].utilizado) {
-            	LP();
-                printf("\nEste código de reembolso já foi utilizado.\n");
-                PA();
-    			LP();
-                return;
-            }
-            if (verificarReembolsoValido(clientes[i].timestamp)) {
-                LP();
-                printf("\nReembolso Válido: R$%.2f\n", clientes[i].total);
-                // Restaurar a quantidade de produtos
-                float valor_reembolsado = clientes[i].total;
-                for (int j = 0; j < total_produtos; j++) {
-                    if (valor_reembolsado >= produtos[j].preco) {
-                        int quantidade_reembolsada = (int)(valor_reembolsado / produtos[j].preco);
-                        produtos[j].quantidade += quantidade_reembolsada;
-                        valor_reembolsado -= quantidade_reembolsada * produtos[j].preco;
-                    }
-                }
-                // Salvar o estoque atualizado após o reembolso
-                salvarProdutos();
-                // Marcar o reembolso como utilizado
-                clientes[i].utilizado = 1;
-                printf("\nEstoque restaurado após o reembolso.\n");
-            } else {
-                printf("\nReembolso inválido ou expirado.\n");
-            }
-            return;
+    // Verifica se o código está no histórico
+    int encontrado = 0;
+    for (int i = 0; i < total_reembolsos; i++) {
+        if (strcmp(historico_reembolsos[i], codigo) == 0) {
+            encontrado = 1;
+            break;
         }
     }
-    LP();
-    printf("\n\n\n\nCódigo de reembolso não encontrado.\n");
-    PA();
-    LP();
+
+    if (encontrado) {
+        printf("\nReembolso válido.\n");
+    } else {
+        printf("\nCódigo de reembolso inválido.\n");
+    }
 }
 
 
@@ -469,7 +473,7 @@ void exibirMenuPrincipal() {
         switch (opcao) {
             case 1:
                 if (verificarLogin()) {
-                    printf("\nLogado com sucesso!\n"); // Mensagem de login bem-sucedido
+                    printf("\nLogado com sucesso!\n"); 
                     PA();
                     exibirMenuEscolha();
                     
@@ -619,9 +623,7 @@ void cadastrarUsuario() {
         fgets(novo_usuario.password, sizeof(novo_usuario.password), stdin);
         novo_usuario.password[strcspn(novo_usuario.password, "\n")] = 0;
 
-        printf("\nTipo de usuário (1: Caixa, 2: Logística): ");
-        scanf("%d", &novo_usuario.tipo);
-        limparBuffer();
+      
         LP();
         usuarios[total_usuarios++] = novo_usuario;
         salvarUsuarios(); // Salva após cadastrar
