@@ -91,8 +91,8 @@ void PA();
 //fazendo o código ficar portável para linux e macOS sem "cls' e "pause"
 
 void LP(){
-	system("clear");   // se quiser usar no linux ou mac, remova as barras.
-	// system("cls");       
+	//system("clear");   // se quiser usar no linux ou mac, remova as barras.
+	 system("cls");       
 }
 void PA(){
 	printf("\nPressione 'ENTER' para continuar...");
@@ -453,8 +453,9 @@ void adicionarReembolsoAoHistorico(const char* codigo_reembolso) {
 void verificarReembolso() {
     LP();
 
-    // Exibe os últimos cinco códigos de reembolso e seus produtos associados
-    printf("\nÚltimos %d códigos de reembolso e produtos:\n", total_reembolsos < MAX_REEMBOLSOS ? total_reembolsos : MAX_REEMBOLSOS);
+    // Exibe os últimos cinco códigos de reembolso e produtos associados
+    printf("\nÚltimos %d códigos de reembolso e produtos associados:\n", 
+           total_reembolsos < MAX_REEMBOLSOS ? total_reembolsos : MAX_REEMBOLSOS);
     for (int i = 0; i < total_reembolsos; i++) {
         printf("- Código: %s\n", historico_reembolsos[i]);
         // Exibe os produtos relacionados a esse código de reembolso
@@ -464,32 +465,47 @@ void verificarReembolso() {
                 for (int k = 0; k < 5 && strlen(clientes[j].produtos[k]) > 0; k++) {
                     printf("%s ", clientes[j].produtos[k]);
                 }
-                printf("\n\n");
-                break; // Para não exibir mais de uma vez o mesmo código
+                printf("\n");
+                break;
             }
         }
     }
 
     // Solicita o código de reembolso ao usuário
-    char codigo[20];
     printf("\nDigite o código de reembolso: ");
+    char codigo[20];
     fgets(codigo, sizeof(codigo), stdin);
     codigo[strcspn(codigo, "\n")] = 0;
 
-    // Verifica se o código está no histórico
+    // Procura pelo código nos clientes registrados
     int encontrado = 0;
-    for (int i = 0; i < total_reembolsos; i++) {
-        if (strcmp(historico_reembolsos[i], codigo) == 0) {
+    for (int i = 0; i < total_clientes; i++) {
+        if (strcmp(clientes[i].codigo_reembolso, codigo) == 0) {
             encontrado = 1;
-            break;
+
+            if (clientes[i].utilizado) {
+                printf("\nEste código de reembolso já foi utilizado.\n");
+                PA();
+                LP();
+                return;
+            }
+
+            if (!verificarReembolsoValido(clientes[i].timestamp)) {
+                printf("\nO código de reembolso expirou.\n");
+                PA();
+                LP();
+                return;
+            }
+
+            printf("\nReembolso válido!\n");
+            clientes[i].utilizado = 1; // Marca o código como utilizado
+            PA();
+            LP();
+            return;
         }
     }
 
-    if (encontrado) {
-        printf("\nReembolso válido.\n");
-        PA();
-        LP();
-    } else {
+    if (!encontrado) {
         printf("\nCódigo de reembolso inválido.\n");
         PA();
         LP();
@@ -506,10 +522,10 @@ void exibirMenuPrincipal() {
         printf("|     Menu Principal:    |\n");
         printf("|------------------------|\n");
         printf("| 1. Login               |\n");
-        printf("| 2. Cadastrar Usuário  |\n");
+        printf("| 2. Cadastrar Usuário   |\n");
         printf("| 0. Sair                |\n");
         printf("|------------------------|\n");
-        printf("| Escolha uma opção:   | ");
+        printf("| Escolha uma opção:     | ");
         printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
         scanf("%d", &opcao);
         printf("|________________________|\n");
@@ -553,7 +569,7 @@ void exibirMenuEscolha() {
         printf("| 3. Verificar Reembolso   |\n");
         printf("| 0. Sair                  |\n");
         printf("|--------------------------|\n");
-        printf("| Escolha uma opção:     | ");
+        printf("| Escolha uma opção:       | ");
         printf("             \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
         scanf("%d", &opcao);
         printf("|__________________________|\n");
@@ -586,12 +602,12 @@ void exibirMenuLogistica() {
 	LP();
     while (1) {
     	printf("\n\n\n\n\n\n _______________________________\n");
-    	printf("|       Menu de Logística      |\n");
+    	printf("|       Menu de Logística       |\n");
     	printf("|-------------------------------|\n");
         printf("| 1. Cadastrar Produto      	|\n");
         printf("| 2. Listar Produtos        	|\n");
         printf("| 3. Atualizar Estoque      	|\n");
-        printf("| 4. Relatório de Estoque Baixo|\n");
+        printf("| 4. Relatório de Estoque Baixo |\n");
         printf("| 5. Alterar Produto         	|\n");
         printf("| 0. Voltar                 	|\n");
         printf("|-------------------------------|\n");
